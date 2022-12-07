@@ -3,13 +3,13 @@ LIB = /usr/X11R6/lib
 
 CC = gcc
 
-all: sample_v5
+all: Ammeter_v1
 
-sample_v5: sample_v5.o
-	$(CC) sample_v5.o -o sample_v5 -lgpg3100 -lpthread
+Ammeter_v1: Ammeter_v1.o
+	$(CC) Ammeter_v1.o -o Ammeter_v1 -lgpg3100 -lpthread
 
-sample_v5.o: sample_v5.c
-	$(CC) -Wall -c sample_v5.c -o sample_v5.o
+Ammeter_v1.o: Ammeter_v1.c
+	$(CC) -Wall -c Ammeter_v1.c -o Ammeter_v1.o
 
 clean:
-	rm -f *.o ¥#* *~ sample_v5
+	rm -f *.o ¥#* *~ Ammeter_v1
