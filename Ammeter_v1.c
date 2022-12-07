@@ -1,60 +1,35 @@
+/**
+ * @file Ammeter_v1.c
+ * @author Kazuya Nagata
+ * @brief
+ * @version 0.1
+ * @date 2022-12-07
+ *
+ * @copyright Copyright (c) 2022
+ *
+ */
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "fbiad.h"
 
+void GetCommandLineArgument(int argc_, char **argv_, int *pDnum,
+                            int *pChannel_count, char **pFile_name);
+
 int main(int argc, char *argv[]) {
-    int dnum;
     int dnum_bias = 5;
     int dnum_clock = 4;
 
+    int dnum;
     int channel_count;
-    char file_name[100];
+    char *file_name = "current.txt";
 
-    // getopt関数を用いてコマンドライン引数の処理
-    int ret = -1;
-
-    while (1) {
-        ret = getopt(argc, argv, "hd:n:f:");
-
-        if (ret == -1)
-            break;
-
-        switch (ret) {
-        case 'h':
-            // show help text
-            printf("\nhelp text will be added\n\n");
-            exit(0);
-            break;
-
-        case 'd':
-            dnum = atoi(optarg);
-            break;
-
-        case 'n':
-            channel_count = atoi(optarg);
-            break;
-
-        case 'f':
-            strcpy(file_name, optarg);
-            break;
-
-        case '?':
-            printf("???\n");
-            break;
-
-        default:
-            printf("?? getopt returned character code 0%o ??\n", ret);
-        }
-    }
-
-    printf("\n");
-    printf("Device=");
-    printf("%01X ", dnum);
-    printf("\n");
+    // getopt関数を用いてコマンドライン引数を格納
+    GetCommandLineArgument(argc, argv, &dnum, &channel_count, &file_name);
 
     int nRet;
     ADSMPLREQ AdSmplConfig;
@@ -172,5 +147,63 @@ int main(int argc, char *argv[]) {
         printf("\n");
     }
     nRet = AdClose(dnum);
+    free(file_name); // file_name はmallocで動的にメモリを確保しているので、終了前にメモリを開放する
     return 0;
+}
+
+/**
+ * @brief Get the Command Line Argument object
+ *
+ * @param argc_ コマンドライン引数のargc
+ * @param argv_ コマンドライン引数のargv
+ * @param pDnum ポインタ（引数 "-d" の値が格納される）
+ * @param pChannel_count ポインタ（引数 "-n" の値が格納される）
+ * @param pFile_name ポインタ（引数 "-f" の文字列が格納される）
+ * @details コマンドライン引数を3つのアドレスに格納する
+ */
+void GetCommandLineArgument(int argc_, char **argv_, int *pDnum,
+                            int *pChannel_count, char **pFile_name) {
+    int ret = -1;
+
+    while (1) {
+        // getopt関数によってグローバル変数 optarg が定義される
+        ret = getopt(argc_, argv_, "hd:n:f:");
+
+        if (ret == -1) break;
+
+        switch (ret) {
+            case 'h':
+                // show help text
+                printf("\nhelp text will be added\n\n");
+                exit(0);
+                break;
+
+            case 'd':
+                *pDnum = atoi(optarg);
+                break;
+
+            case 'n':
+                *pChannel_count = atoi(optarg);
+                break;
+
+            case 'f': {
+                // 以下は複数の戻り値（文字列含む）を返すための処理 参考
+                // https://skpme.com/211/
+                char *cp = NULL;
+                cp = (char *)malloc(sizeof(char) * 100);
+                if (cp == NULL) {
+                    printf("メモリ不足で文字列配列の作成失敗\n");
+                }
+                strcpy(cp, optarg);
+                *pFile_name = cp;
+            } break;
+
+            case '?':
+                printf("???\n");
+                break;
+
+            default:
+                printf("?? getopt returned character code 0%o ??\n", ret);
+        }
+    }
 }
