@@ -2,7 +2,7 @@
  * @file Ammeter_v1.c
  * @author Kazuya Nagata
  * @brief
- * @version 1.3
+ * @version 1.4
  * @date 2022-12-07
  *
  * @copyright Copyright (c) 2022
@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    // 保存用ファイルの先頭行に入力されたコマンドライン引数を書き込み
+    // 保存用ファイルの新規行に、入力されたコマンドライン引数を書き込み
     FILE *fp;
     fp = fopen(file_name, "a+");
     if (fp == NULL) {
@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
     fprintf(fp, "-d %d ", dnum);
     fprintf(fp, "-n %d ", channel_count);
     fprintf(fp, "-f %s ", file_name);
-    fprintf(fp, "\n\n");
+    fprintf(fp, "\n");
     fclose(fp);
 
     // ADCボードへのIOポートを開く
