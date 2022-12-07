@@ -90,7 +90,6 @@ int main(int argc, char *argv[]) {
 
         // データの取得
         AdGetSamplingData(dnum, sample_data, &ul_ad_sample_count);
-        int ulSmpl = ul_ad_sample_count;
 
         unsigned long k;
         unsigned long j;
@@ -131,7 +130,7 @@ int main(int argc, char *argv[]) {
             ave[l] = 0.0;
         }
 
-        for (j = 0; j < ulSmpl; j++) {
+        for (j = 0; j < ul_ad_sample_count; j++) {
             // file open
             FILE *fp;
             fp = fopen(file_name, "a+");
@@ -151,10 +150,10 @@ int main(int argc, char *argv[]) {
                 }
 
                 sum[k] += current_data[j][k];
-                ave[k] = sum[k] / ulSmpl;
+                ave[k] = sum[k] / ul_ad_sample_count;
             }
 
-            if (j == ulSmpl - 1) {
+            if (j == ul_ad_sample_count - 1) {
                 int m;
                 for (m = 0; m < channel_count; m++) {
                     printf("%s ", channel_name[m]);
