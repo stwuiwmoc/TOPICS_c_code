@@ -27,7 +27,7 @@ float CalcIna2128Gain(int dnum_, int dnum_bias_, int channel_number);
 
 float CalcCurrentFromVoltage(float voltage_, float gain_, float current_measurement_resistor_);
 
-void GetLocalDatetimeInStr(char **local_datetime_);
+void GetLocalDatetimeInStr(char **pLocal_datetime);
 
 int main(int argc, char *argv[]) {
 
@@ -294,6 +294,11 @@ float CalcCurrentFromVoltage(float voltage_, float gain_, float current_measurem
     return current_uA;
 }
 
+/**
+ * @brief 現在日時を文字列として取得する
+ *
+ * @param pLocal_datetime ポインタ（文字列が保存される）
+ */
 void GetLocalDatetimeInStr(char **pLocal_datetime) {
 
     // 現在日時を文字列として取得 参考 https://www.ibm.com/docs/ja/zos/2.4.0?topic=functions-strftime-convert-formatted-time
