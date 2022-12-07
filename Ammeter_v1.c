@@ -2,7 +2,7 @@
  * @file Ammeter_v1.c
  * @author Kazuya Nagata
  * @brief
- * @version 1.4
+ * @version 1.5
  * @date 2022-12-07
  *
  * @copyright Copyright (c) 2022
@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <time.h>
 
 #include "fbiad.h"
 
@@ -25,6 +26,8 @@ float CalcVoltageAtAdcBoardInput(float ad_conveted_count_value);
 float CalcIna2128Gain(int dnum_, int dnum_bias_, int channel_number);
 
 float CalcCurrentFromVoltage(float voltage_, float gain_, float current_measurement_resistor_);
+
+void GetLocalDatetimeInStr(char **pLocal_datetime);
 
 int main(int argc, char *argv[]) {
 
@@ -122,6 +125,11 @@ int main(int argc, char *argv[]) {
             printf("cannot open\n");
             exit(1);
         }
+
+        // 保存した時刻を書き込み
+        char *local_time = NULL;
+        GetLocalDatetimeInStr(&local_time);
+        fprintf(fp, "%s ", local_time);
 
         // チャンネル毎に処理する
         for (int k = 0; k < channel_count; k++) {
@@ -284,4 +292,30 @@ float CalcCurrentFromVoltage(float voltage_, float gain_, float current_measurem
     // [uA] に単位換算
     float current_uA = current_A * pow(10, 6);
     return current_uA;
+}
+
+/**
+ * @brief 現在日時を文字列として取得する
+ *
+ * @param pLocal_datetime ポインタ（文字列が保存される）
+ */
+void GetLocalDatetimeInStr(char **pLocal_datetime) {
+
+    // 現在日時を文字列として取得 参考 https://www.ibm.com/docs/ja/zos/2.4.0?topic=functions-strftime-convert-formatted-time
+    char local_datetime[100];
+    time_t temp;
+    struct tm *timeptr;
+
+    temp = time(NULL);
+    timeptr = localtime(&temp);
+    strftime(local_datetime, sizeof(local_datetime)-1, "%x-%X", timeptr);
+
+    // 以下は文字列を引数として返すための処理 参考 https://skpme.com/211/
+    char *cp = NULL;
+    cp = (char *)malloc(sizeof(char) * 100);
+    if (cp == NULL) {
+        printf("メモリ不足で文字列配列の作成失敗\n");
+    }
+    strcpy(cp, local_datetime);
+    *pLocal_datetime = cp;
 }
