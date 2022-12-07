@@ -103,15 +103,6 @@ int main(int argc, char *argv[]) {
             exit(1);
         }
 
-        float sum[channel_count];
-        float ave[channel_count];
-
-        // 平均値計算用
-        for (int i = 0; i < channel_count; i++) {
-            sum[i] = 0.0;
-            ave[i] = 0.0;
-        }
-
         // チャンネル毎に処理する
         for (int k = 0; k < channel_count; k++) {
 
@@ -124,6 +115,10 @@ int main(int argc, char *argv[]) {
                 gain = 1.0 + 50000.0 / gain_resistor;
             }
 
+            // 電流の平均値計算用の変数の初期化
+            float current_sum = 0;
+            float current_average = 0;
+
             // 一つのチャンネルに格納されたデータの処理
             for (unsigned long j = 0; j < ul_ad_sample_count; j++) {
 
@@ -134,18 +129,18 @@ int main(int argc, char *argv[]) {
                 // 電圧値を電流値に直す
                 float current_data = (adc_input_voltage / gain) / 1000.0 * pow(10, 6);
 
-                // 電流値を平均する
-                sum[k] += current_data;
-                ave[k] = sum[k] / ul_ad_sample_count;
+                // 電流値を格納されたデータ分で平均する
+                current_sum += current_data;
+                current_average = current_sum / ul_ad_sample_count;
 
                 // 格納されている分を全て読み出し終わったら電流値を表示・保存する
                 if (j == ul_ad_sample_count - 1) {
                     // 標準出力への表示
                     printf("%s ", channel_name[k]);
-                    printf("(uA) = %.4f\n", ave[k]);
+                    printf("(uA) = %.4f\n", current_average);
 
                     // 保存用ファイルへの書き込み
-                    fprintf(fp, "%f ", ave[k]);
+                    fprintf(fp, "%f ", current_average);
                 }
             }
         }
