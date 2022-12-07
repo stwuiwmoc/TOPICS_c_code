@@ -67,8 +67,6 @@ int main(int argc, char *argv[]) {
         // データの取得
         AdGetSamplingData(dnum, sample_data, &ul_ad_sample_count);
 
-        unsigned long k;
-        unsigned long j;
         float adc_resolution = pow(2.0, 16.0);
         float gain_resistor = 2700.0;
         float gain = 1.0 + 50000.0 / gain_resistor;
@@ -100,13 +98,12 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        int l;
-        for (l = 0; l < channel_count; l++) {
-            sum[l] = 0.0;
-            ave[l] = 0.0;
+        for (int i = 0; i < channel_count; i++) {
+            sum[i] = 0.0;
+            ave[i] = 0.0;
         }
 
-        for (j = 0; j < ul_ad_sample_count; j++) {
+        for (unsigned long j = 0; j < ul_ad_sample_count; j++) {
             // file open
             FILE *fp;
             fp = fopen(file_name, "a+");
@@ -115,7 +112,7 @@ int main(int argc, char *argv[]) {
                 exit(1);
             }
 
-            for (k = 0; k < channel_count; k++) {
+            for (int k = 0; k < channel_count; k++) {
                 // data print
                 float voltage_data = sample_data[j][k] * 20.0 / adc_resolution - 10.0;
 
@@ -130,13 +127,12 @@ int main(int argc, char *argv[]) {
             }
 
             if (j == ul_ad_sample_count - 1) {
-                int m;
-                for (m = 0; m < channel_count; m++) {
-                    printf("%s ", channel_name[m]);
-                    printf("(uA) = %.4f", ave[m]);
+                for (int k = 0; k < channel_count; k++) {
+                    printf("%s ", channel_name[k]);
+                    printf("(uA) = %.4f", ave[k]);
                     printf("\n");
                     // save data
-                    fprintf(fp, "%f ", ave[m]);
+                    fprintf(fp, "%f ", ave[k]);
                 }
                 fprintf(fp, "\n");
                 printf("\n");
