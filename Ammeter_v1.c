@@ -65,6 +65,19 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    // 保存用ファイルの先頭行に入力されたコマンドライン引数を書き込み
+    FILE *fp;
+    fp = fopen(file_name, "a+");
+    if (fp == NULL) {
+        printf("cannot open\n");
+        exit(1);
+    }
+    fprintf(fp, "-d %d ", dnum);
+    fprintf(fp, "-n %d ", channel_count);
+    fprintf(fp, "-f %s ", file_name);
+    fprintf(fp, "\n\n");
+    fclose(fp);
+
     // ADCボードへのIOポートを開く
     int nRet;
     ADSMPLREQ AdSmplConfig;
