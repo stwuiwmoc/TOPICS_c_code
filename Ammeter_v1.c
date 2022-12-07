@@ -2,7 +2,7 @@
  * @file Ammeter_v1.c
  * @author Kazuya Nagata
  * @brief
- * @version 0.3
+ * @version 0.4
  * @date 2022-12-07
  *
  * @copyright Copyright (c) 2022
@@ -204,6 +204,7 @@ void GetCommandLineArgument(int argc_, char **argv_, int *pDnum,
         }
     }
 }
+
 /**
  * @brief AD変換された読み出しデータをADCボード入力時点でのアナログ電圧値[V]に換算し直す
  *
