@@ -22,6 +22,8 @@ void GetCommandLineArgument(int argc_, char **argv_, int *pDnum,
 
 float CalcVoltageAtAdcBoardInput(float ad_conveted_count_value);
 
+float CalcIna2128Gain(int dnum_, int dnum_bias_, int channel_number);
+
 int main(int argc, char *argv[]) {
     int dnum_bias = 5;
     int dnum_clock = 4;
@@ -107,13 +109,7 @@ int main(int argc, char *argv[]) {
         for (int k = 0; k < channel_count; k++) {
 
             // INA2128 のゲイン計算（Vdducラインのみゲインが異なる）
-            float gain;
-            if (dnum == dnum_bias && k == 5) {
-                gain = 1;
-            } else {
-                float gain_resistor = 2700.0;
-                gain = 1.0 + 50000.0 / gain_resistor;
-            }
+            float gain = CalcIna2128Gain(dnum, dnum_bias, k);
 
             // 電流の平均値計算用の変数の初期化
             float current_sum = 0;
@@ -231,4 +227,15 @@ float CalcVoltageAtAdcBoardInput(float ad_conveted_count_value_) {
     float input_voltage = ad_conveted_count_value_ * (input_voltage_range / adc_resolution) + input_min_voltage;
 
     return input_voltage;
+}
+
+float CalcIna2128Gain(int dnum_, int dnum_bias_, int channel_number) {
+    float gain_;
+    if (dnum_ == dnum_bias_ && channel_number == 5) {
+        gain_ = 1;
+    } else {
+        float gain_resistor = 2700.0;
+        gain_ = 1.0 + 50000.0 / gain_resistor;
+    }
+    return gain_;
 }
