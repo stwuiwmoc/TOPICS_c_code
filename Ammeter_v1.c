@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
                 "V3      ", "AGND    ", "Vdet    ", "Vdetgate",
                 "Vddout  ", "Vdduc   ", "Vgg     ", "Vsub    "};
 
-            for (int i = 0; i < 8; i++) {
+            for (int i = 0; i < channel_count; i++) {
                 strcpy(channel_name[i], channel_name_bias[i]);
             }
         } else if (dnum == dnum_clock) {
@@ -89,11 +89,11 @@ int main(int argc, char *argv[]) {
                 "syncS   ", "1S      ", "2S      ", "syncF   ",
                 "1F      ", "2F      ", "rst     ", "N.C.    "};
 
-            for (int i = 0; i < 8; i++) {
+            for (int i = 0; i < channel_count; i++) {
                 strcpy(channel_name[i], channel_name_clock[i]);
             }
         } else {
-            for (int i = 0; i < 8; i++) {
+            for (int i = 0; i < channel_count; i++) {
                 strcpy(channel_name[i], "N.C.    ");
             }
         }
