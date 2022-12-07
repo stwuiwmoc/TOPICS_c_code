@@ -150,14 +150,13 @@ int main(int argc, char *argv[]) {
 }
 
 /**
- * @brief Get the Command Line Argument object
+ * @brief コマンドライン引数を3つのアドレスに格納する
  *
  * @param argc_ コマンドライン引数のargc
  * @param argv_ コマンドライン引数のargv
  * @param pDnum ポインタ（引数 "-d" の値が格納される）
  * @param pChannel_count ポインタ（引数 "-n" の値が格納される）
  * @param pFile_name ポインタ（引数 "-f" の文字列が格納される）
- * @details コマンドライン引数を3つのアドレスに格納する
  */
 void GetCommandLineArgument(int argc_, char **argv_, int *pDnum,
                             int *pChannel_count, char **pFile_name) {
@@ -205,7 +204,12 @@ void GetCommandLineArgument(int argc_, char **argv_, int *pDnum,
         }
     }
 }
-
+/**
+ * @brief AD変換された読み出しデータをADCボード入力時点でのアナログ電圧値[V]に換算し直す
+ *
+ * @param ad_conveted_count_value_ float AD変換された読み出し値
+ * @return float [V] ADCボード入力時点でのアナログ電圧値
+ */
 float CalcVoltageAtAdcBoardInput(float ad_conveted_count_value_) {
     float adc_resolution = pow(2.0, 16.0);
 
