@@ -229,6 +229,14 @@ float CalcVoltageAtAdcBoardInput(float ad_conveted_count_value_) {
     return input_voltage;
 }
 
+/**
+ * @brief 各バイアスライン・クロックラインでのINA2128の差動増幅ゲインを計算する
+ *
+ * @param dnum_ コマンドライン引数 "-d" の値（ADCボードの番号）
+ * @param dnum_bias_ バイアスラインを計測しているADCボードの番号
+ * @param channel_number ゲインを計算したいチャンネルの番号
+ * @return float チャンネルに対応したINA2128のゲイン
+ */
 float CalcIna2128Gain(int dnum_, int dnum_bias_, int channel_number) {
     float gain_;
     if (dnum_ == dnum_bias_ && channel_number == 5) {
