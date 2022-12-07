@@ -147,6 +147,7 @@ int main(int argc, char *argv[]) {
         printf("\n");
     }
     nRet = AdClose(dnum);
+    free(file_name); // file_name はmallocで動的にメモリを確保しているので、終了前にメモリを開放する
     return 0;
 }
 
