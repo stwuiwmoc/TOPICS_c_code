@@ -2,7 +2,7 @@
  * @file Ammeter_v1.c
  * @author Kazuya Nagata
  * @brief
- * @version 0.2
+ * @version 0.3
  * @date 2022-12-07
  *
  * @copyright Copyright (c) 2022
@@ -30,6 +30,31 @@ int main(int argc, char *argv[]) {
 
     // getopt関数を用いてコマンドライン引数を格納
     GetCommandLineArgument(argc, argv, &dnum, &channel_count, &file_name);
+
+    // dnum に応じて表示するチャンネル名のラベルを書き換え
+    char channel_name[8][9];
+
+    if (dnum == dnum_bias) {
+        char channel_name_bias[8][9] = {
+            "V3      ", "AGND    ", "Vdet    ", "Vdetgate",
+            "Vddout  ", "Vdduc   ", "Vgg     ", "Vsub    "};
+
+        for (int i = 0; i < channel_count; i++) {
+            strcpy(channel_name[i], channel_name_bias[i]);
+        }
+    } else if (dnum == dnum_clock) {
+        char channel_name_clock[8][9] = {
+            "syncS   ", "1S      ", "2S      ", "syncF   ",
+            "1F      ", "2F      ", "rst     ", "N.C.    "};
+
+        for (int i = 0; i < channel_count; i++) {
+            strcpy(channel_name[i], channel_name_clock[i]);
+        }
+    } else {
+        for (int i = 0; i < channel_count; i++) {
+            strcpy(channel_name[i], "N.C.    ");
+        }
+    }
 
     int nRet;
     ADSMPLREQ AdSmplConfig;
@@ -73,30 +98,6 @@ int main(int argc, char *argv[]) {
         float current_data[1024][channel_count];
         float sum[channel_count];
         float ave[channel_count];
-
-        char channel_name[8][9];
-
-        if (dnum == dnum_bias) {
-            char channel_name_bias[8][9] = {
-                "V3      ", "AGND    ", "Vdet    ", "Vdetgate",
-                "Vddout  ", "Vdduc   ", "Vgg     ", "Vsub    "};
-
-            for (int i = 0; i < channel_count; i++) {
-                strcpy(channel_name[i], channel_name_bias[i]);
-            }
-        } else if (dnum == dnum_clock) {
-            char channel_name_clock[8][9] = {
-                "syncS   ", "1S      ", "2S      ", "syncF   ",
-                "1F      ", "2F      ", "rst     ", "N.C.    "};
-
-            for (int i = 0; i < channel_count; i++) {
-                strcpy(channel_name[i], channel_name_clock[i]);
-            }
-        } else {
-            for (int i = 0; i < channel_count; i++) {
-                strcpy(channel_name[i], "N.C.    ");
-            }
-        }
 
         for (int i = 0; i < channel_count; i++) {
             sum[i] = 0.0;
