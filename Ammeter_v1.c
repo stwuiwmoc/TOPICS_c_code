@@ -2,7 +2,7 @@
  * @file Ammeter_v1.c
  * @author Kazuya Nagata
  * @brief
- * @version 0.4
+ * @version 1.1
  * @date 2022-12-07
  *
  * @copyright Copyright (c) 2022
@@ -58,6 +58,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    // ADCボードへのIOポートを開く
     int nRet;
     ADSMPLREQ AdSmplConfig;
     unsigned short sample_data[1024][channel_count];
@@ -94,54 +95,62 @@ int main(int argc, char *argv[]) {
         // データの取得
         AdGetSamplingData(dnum, sample_data, &ul_ad_sample_count);
 
-        float gain_resistor = 2700.0;
-        float gain = 1.0 + 50000.0 / gain_resistor;
-        float current_data[1024][channel_count];
-        float sum[channel_count];
-        float ave[channel_count];
-
-        for (int i = 0; i < channel_count; i++) {
-            sum[i] = 0.0;
-            ave[i] = 0.0;
+        // 保存用ファイルのopen
+        FILE *fp;
+        fp = fopen(file_name, "a+");
+        if (fp == NULL) {
+            printf("cannot open\n");
+            exit(1);
         }
 
-        for (unsigned long j = 0; j < ul_ad_sample_count; j++) {
-            // file open
-            FILE *fp;
-            fp = fopen(file_name, "a+");
-            if (fp == NULL) {
-                printf("cannot open\n");
-                exit(1);
+        // チャンネル毎に処理する
+        for (int k = 0; k < channel_count; k++) {
+
+            // INA2128 のゲイン計算（Vdducラインのみゲインが異なる）
+            float gain;
+            if (dnum == dnum_bias && k == 5) {
+                gain = 1;
+            } else {
+                float gain_resistor = 2700.0;
+                gain = 1.0 + 50000.0 / gain_resistor;
             }
 
-            for (int k = 0; k < channel_count; k++) {
-                // AD変換された読み出し値をアナログ値に換算し直す
+            // 電流の平均値計算用の変数の初期化
+            float current_sum = 0;
+            float current_average = 0;
+
+            // 一つのチャンネルに格納されたデータの処理
+            for (unsigned long j = 0; j < ul_ad_sample_count; j++) {
+
+                // AD変換された読み出し値をアナログ電圧値に換算し直す
                 float ad_converted_count_value = sample_data[j][k];
                 float adc_input_voltage = CalcVoltageAtAdcBoardInput(ad_converted_count_value);
 
-                if (dnum == dnum_bias && k == 5) {
-                    current_data[j][k] = adc_input_voltage / 1000.0 * pow(10, 6);
-                } else {
-                    current_data[j][k] = (adc_input_voltage / gain) / 1000.0 * pow(10, 6);
-                }
+                // 電圧値を電流値に直す
+                float current_data = (adc_input_voltage / gain) / 1000.0 * pow(10, 6);
 
-                sum[k] += current_data[j][k];
-                ave[k] = sum[k] / ul_ad_sample_count;
-            }
+                // 電流値を格納されたデータ分で平均する
+                current_sum += current_data;
+                current_average = current_sum / ul_ad_sample_count;
 
-            if (j == ul_ad_sample_count - 1) {
-                for (int k = 0; k < channel_count; k++) {
+                // 格納されている分を全て読み出し終わったら電流値を表示・保存する
+                if (j == ul_ad_sample_count - 1) {
+                    // 標準出力への表示
                     printf("%s ", channel_name[k]);
-                    printf("(uA) = %.4f", ave[k]);
-                    printf("\n");
-                    // save data
-                    fprintf(fp, "%f ", ave[k]);
+                    printf("(uA) = %.4f\n", current_average);
+
+                    // 保存用ファイルへの書き込み
+                    fprintf(fp, "%f ", current_average);
                 }
-                fprintf(fp, "\n");
-                printf("\n");
             }
-            fclose(fp);
         }
+
+        // 全チャンネル書き込み終わったら改行
+        fprintf(fp, "\n");
+
+        // 保存用ファイルの close
+        fclose(fp);
+
         printf("\n");
     }
     nRet = AdClose(dnum);
