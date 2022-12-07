@@ -20,6 +20,8 @@
 void GetCommandLineArgument(int argc_, char **argv_, int *pDnum,
                             int *pChannel_count, char **pFile_name);
 
+float CalcVoltageAtAdcBoardInput(float ad_conveted_count_value);
+
 int main(int argc, char *argv[]) {
     int dnum_bias = 5;
     int dnum_clock = 4;
@@ -92,7 +94,6 @@ int main(int argc, char *argv[]) {
         // データの取得
         AdGetSamplingData(dnum, sample_data, &ul_ad_sample_count);
 
-        float adc_resolution = pow(2.0, 16.0);
         float gain_resistor = 2700.0;
         float gain = 1.0 + 50000.0 / gain_resistor;
         float current_data[1024][channel_count];
@@ -114,13 +115,14 @@ int main(int argc, char *argv[]) {
             }
 
             for (int k = 0; k < channel_count; k++) {
-                // data print
-                float voltage_data = sample_data[j][k] * 20.0 / adc_resolution - 10.0;
+                // AD変換された読み出し値をアナログ値に換算し直す
+                float ad_converted_count_value = sample_data[j][k];
+                float adc_input_voltage = CalcVoltageAtAdcBoardInput(ad_converted_count_value);
 
                 if (dnum == dnum_bias && k == 5) {
-                    current_data[j][k] = voltage_data / 1000.0 * pow(10, 6);
+                    current_data[j][k] = adc_input_voltage / 1000.0 * pow(10, 6);
                 } else {
-                    current_data[j][k] = (voltage_data / gain) / 1000.0 * pow(10, 6);
+                    current_data[j][k] = (adc_input_voltage / gain) / 1000.0 * pow(10, 6);
                 }
 
                 sum[k] += current_data[j][k];
@@ -202,4 +204,17 @@ void GetCommandLineArgument(int argc_, char **argv_, int *pDnum,
                 printf("?? getopt returned character code 0%o ??\n", ret);
         }
     }
+}
+
+float CalcVoltageAtAdcBoardInput(float ad_conveted_count_value_) {
+    float adc_resolution = pow(2.0, 16.0);
+
+    float input_min_voltage = -10.0; // [V]
+    float input_max_voltage = +10.0; // [V]
+
+    float input_voltage_range = input_max_voltage - input_min_voltage;
+
+    float input_voltage = ad_conveted_count_value_ * (input_voltage_range / adc_resolution) + input_min_voltage;
+
+    return input_voltage;
 }
