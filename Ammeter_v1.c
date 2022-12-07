@@ -1,3 +1,14 @@
+/**
+ * @file Ammeter_v1.c
+ * @author Kazuya Nagata
+ * @brief
+ * @version 0.1
+ * @date 2022-12-07
+ *
+ * @copyright Copyright (c) 2022
+ *
+ */
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,7 +28,7 @@ int main(int argc, char *argv[]) {
     int channel_count;
     char *file_name = "current.txt";
 
-    // getopt関数を用いてコマンドライン引数の処理
+    // getopt関数を用いてコマンドライン引数を格納
     GetCommandLineArgument(argc, argv, &dnum, &channel_count, &file_name);
 
     printf("\n");
@@ -144,6 +155,16 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
+/**
+ * @brief Get the Command Line Argument object
+ *
+ * @param argc_ コマンドライン引数のargc
+ * @param argv_ コマンドライン引数のargv
+ * @param pDnum ポインタ（引数 "-d" の値が格納される）
+ * @param pChannel_count ポインタ（引数 "-n" の値が格納される）
+ * @param pFile_name ポインタ（引数 "-f" の文字列が格納される）
+ * @details コマンドライン引数を3つのアドレスに格納する
+ */
 void GetCommandLineArgument(int argc_, char **argv_, int *pDnum,
                             int *pChannel_count, char **pFile_name) {
     int ret = -1;
