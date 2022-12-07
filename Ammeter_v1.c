@@ -2,7 +2,7 @@
  * @file Ammeter_v1.c
  * @author Kazuya Nagata
  * @brief
- * @version 0.2
+ * @version 0.3
  * @date 2022-12-07
  *
  * @copyright Copyright (c) 2022
@@ -31,6 +31,7 @@ int main(int argc, char *argv[]) {
     // getopt関数を用いてコマンドライン引数を格納
     GetCommandLineArgument(argc, argv, &dnum, &channel_count, &file_name);
 
+    // dnum に応じて表示するチャンネル名のラベルを書き換え
     char channel_name[8][9];
 
     if (dnum == dnum_bias) {
