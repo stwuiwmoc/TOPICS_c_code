@@ -56,8 +56,6 @@ int main(int argc, char *argv[]) {
 
     int nRet;
     ADSMPLREQ AdSmplConfig;
-    // unsigned long ulSmplNum;
-    // unsigned long ulSmplEventNum;
     unsigned short sample_data[1024][channel_count];
 
     nRet = AdOpen(dnum);
@@ -77,9 +75,6 @@ int main(int argc, char *argv[]) {
         AdSmplConfig.SmplChReq[i].ulRange = AD_10V;
     }
     AdSmplConfig.ulSingleDiff = AD_INPUT_SINGLE;
-    // AdSmplConfig.ulSmplNum = 1024;
-    // AdSmplConfig.ulSmplEventNum = 256;
-    // AdSmplConfig.ulTrigMode = AD_ETERNITY;
 
     // サンプリング条件の設定
     AdSetSamplingConfig(dnum, &AdSmplConfig);
@@ -92,13 +87,10 @@ int main(int argc, char *argv[]) {
         unsigned long ul_ad_sample_count;
         unsigned long ul_ad_available_count;
         AdGetStatus(dnum, &ul_ad_sample_status, &ul_ad_sample_count, &ul_ad_available_count);
-        // printf("Count:%ld\n", ulAdSmplCount);
 
         // データの取得
-        // ulSmplNum = 1024;
         AdGetSamplingData(dnum, sample_data, &ul_ad_sample_count);
         int ulSmpl = ul_ad_sample_count;
-        // printf("Count:%ld\n", ulAdSmplCount);
 
         unsigned long k;
         unsigned long j;
@@ -147,7 +139,7 @@ int main(int argc, char *argv[]) {
                 printf("cannot open\n");
                 exit(1);
             }
-            // printf("%d ", ChCount);
+
             for (k = 0; k < channel_count; k++) {
                 // data print
                 float voltage_data = sample_data[j][k] * 20.0 / adc_resolution - 10.0;
@@ -159,7 +151,6 @@ int main(int argc, char *argv[]) {
                 }
 
                 sum[k] += current_data[j][k];
-                // printf("%f ", sum[k]);
                 ave[k] = sum[k] / ulSmpl;
             }
 
@@ -167,7 +158,6 @@ int main(int argc, char *argv[]) {
                 int m;
                 for (m = 0; m < channel_count; m++) {
                     printf("%s ", channel_name[m]);
-                    // printf("Ch%d_", m+1);
                     printf("(uA) = %.4f", ave[m]);
                     printf("\n");
                     // save data
