@@ -31,11 +31,6 @@ int main(int argc, char *argv[]) {
     // getopt関数を用いてコマンドライン引数を格納
     GetCommandLineArgument(argc, argv, &dnum, &channel_count, &file_name);
 
-    printf("\n");
-    printf("Device=");
-    printf("%01X ", dnum);
-    printf("\n");
-
     int nRet;
     ADSMPLREQ AdSmplConfig;
     unsigned short sample_data[1024][channel_count];
