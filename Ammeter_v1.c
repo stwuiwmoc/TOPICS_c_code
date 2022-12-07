@@ -1,6 +1,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
 
 #include "fbiad.h"
@@ -13,40 +14,41 @@ int main(int argc, char *argv[]) {
     int channel_count;
     char file_name[100];
 
-    /***********************************/
-    /*** 0, Interpret the arguments  ***/
-    /***********************************/
-    while ((argc > 1) && (argv[1][0] == '-')) {
-        switch (argv[1][1]) {
-            case 'd':
-                if (argv[1][2] == '\0') {
-                    --argc;
-                    ++argv;
-                    dnum = atoi(argv[1]);
-                } else
-                    dnum = atoi(&argv[1][2]);
-                break;
-            case 'n':
-                if (argv[1][2] == '\0') {
-                    --argc;
-                    ++argv;
-                    channel_count = atoi(argv[1]);
-                } else
-                    channel_count = atoi(&argv[1][2]);
-                break;
-            case 'f':
-                if (argv[1][2] == '\0') {
-                    --argc;
-                    ++argv;
-                    strcpy(file_name, argv[1]);
-                } else
-                    strcpy(file_name, "current.txt");
-                break;
-            default:
-                fprintf(stderr, "Bad option: %s\n", argv[1]);
+    // getopt関数を用いてコマンドライン引数の処理
+    int ret = -1;
+
+    while (1) {
+        ret = getopt(argc, argv, "hd:n:f:");
+
+        if (ret == -1)
+            break;
+
+        switch (ret) {
+        case 'h':
+            // show help text
+            printf("\nhelp text will be added\n\n");
+            exit(0);
+            break;
+
+        case 'd':
+            dnum = atoi(optarg);
+            break;
+
+        case 'n':
+            channel_count = atoi(optarg);
+            break;
+
+        case 'f':
+            strcpy(file_name, optarg);
+            break;
+
+        case '?':
+            printf("???\n");
+            break;
+
+        default:
+            printf("?? getopt returned character code 0%o ??\n", ret);
         }
-        --argc;  // decriment the count
-        ++argv;  // move to next option
     }
 
     printf("\n");
