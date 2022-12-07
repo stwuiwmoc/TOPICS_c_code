@@ -10,8 +10,8 @@ int main(int argc, char *argv[]) {
     int dnum_bias = 5;
     int dnum_clock = 4;
 
-    int ChCount;
-    char flname[100];
+    int channel_count;
+    char file_name[100];
 
     /***********************************/
     /*** 0, Interpret the arguments  ***/
@@ -30,17 +30,17 @@ int main(int argc, char *argv[]) {
                 if (argv[1][2] == '\0') {
                     --argc;
                     ++argv;
-                    ChCount = atoi(argv[1]);
+                    channel_count = atoi(argv[1]);
                 } else
-                    ChCount = atoi(&argv[1][2]);
+                    channel_count = atoi(&argv[1][2]);
                 break;
             case 'f':
                 if (argv[1][2] == '\0') {
                     --argc;
                     ++argv;
-                    strcpy(flname, argv[1]);
+                    strcpy(file_name, argv[1]);
                 } else
-                    strcpy(flname, "current.txt");
+                    strcpy(file_name, "current.txt");
                 break;
             default:
                 fprintf(stderr, "Bad option: %s\n", argv[1]);
@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
     ADSMPLREQ AdSmplConfig;
     // unsigned long ulSmplNum;
     // unsigned long ulSmplEventNum;
-    unsigned short SmplData[1024][ChCount];
+    unsigned short sample_data[1024][channel_count];
 
     nRet = AdOpen(dnum);
     if (nRet != AD_ERROR_SUCCESS) {
@@ -70,9 +70,9 @@ int main(int argc, char *argv[]) {
     AdGetSamplingConfig(dnum, &AdSmplConfig);
 
     unsigned long i;
-    AdSmplConfig.ulChCount = ChCount;
+    AdSmplConfig.ulChCount = channel_count;
 
-    for (i = 0; i < ChCount; i++) {
+    for (i = 0; i < channel_count; i++) {
         AdSmplConfig.SmplChReq[i].ulChNo = i + 1;
         AdSmplConfig.SmplChReq[i].ulRange = AD_10V;
     }
@@ -88,53 +88,53 @@ int main(int argc, char *argv[]) {
         // 連続サンプリングの開始
         AdStartSampling(dnum, FLAG_SYNC);
 
-        unsigned long ulAdSmplStatus;
-        unsigned long ulAdSmplCount;
-        unsigned long ulAdAvailCount;
-        AdGetStatus(dnum, &ulAdSmplStatus, &ulAdSmplCount, &ulAdAvailCount);
+        unsigned long ul_ad_sample_status;
+        unsigned long ul_ad_sample_count;
+        unsigned long ul_ad_available_count;
+        AdGetStatus(dnum, &ul_ad_sample_status, &ul_ad_sample_count, &ul_ad_available_count);
         // printf("Count:%ld\n", ulAdSmplCount);
 
         // データの取得
         // ulSmplNum = 1024;
-        AdGetSamplingData(dnum, SmplData, &ulAdSmplCount);
-        int ulSmpl = ulAdSmplCount;
+        AdGetSamplingData(dnum, sample_data, &ul_ad_sample_count);
+        int ulSmpl = ul_ad_sample_count;
         // printf("Count:%ld\n", ulAdSmplCount);
 
         unsigned long k;
         unsigned long j;
-        float al = pow(2.0, 16.0);
-        float resi = 2700.0;
-        float gain = 1.0 + 50000.0 / resi;
-        float Cdata[1024][ChCount];
-        float sum[ChCount];
-        float ave[ChCount];
+        float adc_resolution = pow(2.0, 16.0);
+        float gain_resistor = 2700.0;
+        float gain = 1.0 + 50000.0 / gain_resistor;
+        float current_data[1024][channel_count];
+        float sum[channel_count];
+        float ave[channel_count];
 
-        char chname[8][9];
+        char channel_name[8][9];
 
         if (dnum == dnum_bias) {
-            char chname_bias[8][9] = {
+            char channel_name_bias[8][9] = {
                 "V3      ", "AGND    ", "Vdet    ", "Vdetgate",
                 "Vddout  ", "Vdduc   ", "Vgg     ", "Vsub    "};
 
             for (i = 0; i < 8; i++) {
-                strcpy(chname[i], chname_bias[i]);
+                strcpy(channel_name[i], channel_name_bias[i]);
             }
         } else if (dnum == dnum_clock) {
-            char chname_clock[8][9] = {
+            char channel_name_clock[8][9] = {
                 "syncS   ", "1S      ", "2S      ", "syncF   ",
                 "1F      ", "2F      ", "rst     ", "N.C.    "};
 
             for (i = 0; i < 8; i++) {
-                strcpy(chname[i], chname_clock[i]);
+                strcpy(channel_name[i], channel_name_clock[i]);
             }
         } else {
             for (i = 0; i < 8; i++) {
-                strcpy(chname[i], "N.C.    ");
+                strcpy(channel_name[i], "N.C.    ");
             }
         }
 
         int l;
-        for (l = 0; l < ChCount; l++) {
+        for (l = 0; l < channel_count; l++) {
             sum[l] = 0.0;
             ave[l] = 0.0;
         }
@@ -142,31 +142,31 @@ int main(int argc, char *argv[]) {
         for (j = 0; j < ulSmpl; j++) {
             // file open
             FILE *fp;
-            fp = fopen(flname, "a+");
+            fp = fopen(file_name, "a+");
             if (fp == NULL) {
                 printf("cannot open\n");
                 exit(1);
             }
             // printf("%d ", ChCount);
-            for (k = 0; k < ChCount; k++) {
+            for (k = 0; k < channel_count; k++) {
                 // data print
-                float Adata = SmplData[j][k] * 20.0 / al - 10.0;
+                float voltage_data = sample_data[j][k] * 20.0 / adc_resolution - 10.0;
 
                 if (dnum == dnum_bias && k == 5) {
-                    Cdata[j][k] = Adata / 1000.0 * pow(10, 6);
+                    current_data[j][k] = voltage_data / 1000.0 * pow(10, 6);
                 } else {
-                    Cdata[j][k] = (Adata / gain) / 1000.0 * pow(10, 6);
+                    current_data[j][k] = (voltage_data / gain) / 1000.0 * pow(10, 6);
                 }
 
-                sum[k] += Cdata[j][k];
+                sum[k] += current_data[j][k];
                 // printf("%f ", sum[k]);
                 ave[k] = sum[k] / ulSmpl;
             }
 
             if (j == ulSmpl - 1) {
                 int m;
-                for (m = 0; m < ChCount; m++) {
-                    printf("%s ", chname[m]);
+                for (m = 0; m < channel_count; m++) {
+                    printf("%s ", channel_name[m]);
                     // printf("Ch%d_", m+1);
                     printf("(uA) = %.4f", ave[m]);
                     printf("\n");
