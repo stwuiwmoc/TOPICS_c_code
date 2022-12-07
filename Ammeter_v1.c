@@ -13,7 +13,6 @@ int main(int argc, char *argv[]) {
     int ChCount;
     char flname[100];
 
-    strcpy(flname, "current.txt");
     /***********************************/
     /*** 0, Interpret the arguments  ***/
     /***********************************/
@@ -40,7 +39,8 @@ int main(int argc, char *argv[]) {
                     --argc;
                     ++argv;
                     strcpy(flname, argv[1]);
-                }
+                } else
+                    strcpy(flname, "current.txt");
                 break;
             default:
                 fprintf(stderr, "Bad option: %s\n", argv[1]);
