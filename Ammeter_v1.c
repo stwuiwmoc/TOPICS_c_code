@@ -27,22 +27,22 @@ float CalcIna2128Gain(int dnum_, int dnum_bias_, int channel_number);
 float CalcCurrentFromVoltage(float voltage_, float gain_, float current_measurement_resistor_);
 
 int main(int argc, char *argv[]) {
+
+    // バイアスライン・クロックラインからそれぞれ繋がっているADCボードの番号を指定
     int dnum_bias = 5;
     int dnum_clock = 4;
 
     // 電流測定用抵抗の値の指定
     float current_measurement_resistor = 1000; // [Ω]
 
+    // getopt関数を用いてコマンドライン引数を格納
     int dnum;
     int channel_count;
     char *file_name = "current.txt";
-
-    // getopt関数を用いてコマンドライン引数を格納
     GetCommandLineArgument(argc, argv, &dnum, &channel_count, &file_name);
 
     // dnum に応じて表示するチャンネル名のラベルを書き換え
     char channel_name[8][9];
-
     if (dnum == dnum_bias) {
         char channel_name_bias[8][9] = {
             "V3      ", "AGND    ", "Vdet    ", "Vdetgate",
