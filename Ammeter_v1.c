@@ -30,6 +30,9 @@ int main(int argc, char *argv[]) {
     int dnum_bias = 5;
     int dnum_clock = 4;
 
+    // 電流測定用抵抗の値の指定
+    float current_measurement_resistor = 1000; // [Ω]
+
     int dnum;
     int channel_count;
     char *file_name = "current.txt";
@@ -112,9 +115,6 @@ int main(int argc, char *argv[]) {
 
             // INA2128 のゲイン計算（Vdducラインのみゲインが異なる）
             float gain = CalcIna2128Gain(dnum, dnum_bias, k);
-
-            // 電流測定用抵抗の値の指定
-            float current_measurement_resistor = 1000; // [Ω]
 
             // 電流の平均値計算用の変数の初期化
             float current_sum = 0;
@@ -253,9 +253,22 @@ float CalcIna2128Gain(int dnum_, int dnum_bias_, int channel_number) {
     return gain_;
 }
 
+/**
+ * @brief INA2128で差動増幅された電圧値から各電圧ラインで流れる電流を計算
+ *
+ * @param voltage_ [V] INA2128で差動増幅が終わった段階の電圧値
+ * @param gain_ INA2128のゲイン
+ * @param current_measurement_resistor_ [Ω] 電流測定用抵抗の値
+ * @return float [uA] 各電圧ラインで流れる電流値
+ */
 float CalcCurrentFromVoltage(float voltage_, float gain_, float current_measurement_resistor_) {
+    // 差動増幅前の値、つまり電流測定用抵抗出の電圧降下を計算
     float voltage_drop_at_current_measurement_resistor = voltage_ / gain_; // [V]
+
+    // 電圧降下から流れる電流を計算
     float current_A = voltage_drop_at_current_measurement_resistor / current_measurement_resistor_; // [A]
+
+    // [uA] に単位換算
     float current_uA = current_A * pow(10, 6);
     return current_uA;
 }
