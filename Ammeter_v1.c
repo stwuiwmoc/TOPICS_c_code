@@ -2,7 +2,7 @@
  * @file Ammeter_v1.c
  * @author Kazuya Nagata
  * @brief
- * @version 1.2
+ * @version 1.3
  * @date 2022-12-07
  *
  * @copyright Copyright (c) 2022
@@ -24,20 +24,25 @@ float CalcVoltageAtAdcBoardInput(float ad_conveted_count_value);
 
 float CalcIna2128Gain(int dnum_, int dnum_bias_, int channel_number);
 
+float CalcCurrentFromVoltage(float voltage_, float gain_, float current_measurement_resistor_);
+
 int main(int argc, char *argv[]) {
+
+    // バイアスライン・クロックラインからそれぞれ繋がっているADCボードの番号を指定
     int dnum_bias = 5;
     int dnum_clock = 4;
 
+    // 電流測定用抵抗の値の指定
+    float current_measurement_resistor = 1000; // [Ω]
+
+    // getopt関数を用いてコマンドライン引数を格納
     int dnum;
     int channel_count;
     char *file_name = "current.txt";
-
-    // getopt関数を用いてコマンドライン引数を格納
     GetCommandLineArgument(argc, argv, &dnum, &channel_count, &file_name);
 
     // dnum に応じて表示するチャンネル名のラベルを書き換え
     char channel_name[8][9];
-
     if (dnum == dnum_bias) {
         char channel_name_bias[8][9] = {
             "V3      ", "AGND    ", "Vdet    ", "Vdetgate",
@@ -123,7 +128,7 @@ int main(int argc, char *argv[]) {
                 float adc_input_voltage = CalcVoltageAtAdcBoardInput(ad_converted_count_value);
 
                 // 電圧値を電流値に直す
-                float current_data = (adc_input_voltage / gain) / 1000.0 * pow(10, 6);
+                float current_data = CalcCurrentFromVoltage(adc_input_voltage, gain, current_measurement_resistor);
 
                 // 電流値を格納されたデータ分で平均する
                 current_sum += current_data;
@@ -242,8 +247,28 @@ float CalcIna2128Gain(int dnum_, int dnum_bias_, int channel_number) {
     if (dnum_ == dnum_bias_ && channel_number == 5) {
         gain_ = 1;
     } else {
-        float gain_resistor = 2700.0;
-        gain_ = 1.0 + 50000.0 / gain_resistor;
+        float gain_resistor = 2700.0; //[Ω]
+        gain_ = 1.0 + 50000.0 / gain_resistor; //計算式はINA2128のデータシートを参照
     }
     return gain_;
+}
+
+/**
+ * @brief INA2128で差動増幅された電圧値から各電圧ラインで流れる電流を計算
+ *
+ * @param voltage_ [V] INA2128で差動増幅が終わった段階の電圧値
+ * @param gain_ INA2128のゲイン
+ * @param current_measurement_resistor_ [Ω] 電流測定用抵抗の値
+ * @return float [uA] 各電圧ラインで流れる電流値
+ */
+float CalcCurrentFromVoltage(float voltage_, float gain_, float current_measurement_resistor_) {
+    // 差動増幅前の値、つまり電流測定用抵抗出の電圧降下を計算
+    float voltage_drop_at_current_measurement_resistor = voltage_ / gain_; // [V]
+
+    // 電圧降下から流れる電流を計算
+    float current_A = voltage_drop_at_current_measurement_resistor / current_measurement_resistor_; // [A]
+
+    // [uA] に単位換算
+    float current_uA = current_A * pow(10, 6);
+    return current_uA;
 }
