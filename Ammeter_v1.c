@@ -44,10 +44,9 @@ int main(int argc, char *argv[]) {
     // サンプリング条件の取得
     AdGetSamplingConfig(dnum, &AdSmplConfig);
 
-    unsigned long i;
     AdSmplConfig.ulChCount = channel_count;
 
-    for (i = 0; i < channel_count; i++) {
+    for (unsigned long i = 0; i < channel_count; i++) {
         AdSmplConfig.SmplChReq[i].ulChNo = i + 1;
         AdSmplConfig.SmplChReq[i].ulRange = AD_10V;
     }
@@ -84,7 +83,7 @@ int main(int argc, char *argv[]) {
                 "V3      ", "AGND    ", "Vdet    ", "Vdetgate",
                 "Vddout  ", "Vdduc   ", "Vgg     ", "Vsub    "};
 
-            for (i = 0; i < 8; i++) {
+            for (int i = 0; i < 8; i++) {
                 strcpy(channel_name[i], channel_name_bias[i]);
             }
         } else if (dnum == dnum_clock) {
@@ -92,11 +91,11 @@ int main(int argc, char *argv[]) {
                 "syncS   ", "1S      ", "2S      ", "syncF   ",
                 "1F      ", "2F      ", "rst     ", "N.C.    "};
 
-            for (i = 0; i < 8; i++) {
+            for (int i = 0; i < 8; i++) {
                 strcpy(channel_name[i], channel_name_clock[i]);
             }
         } else {
-            for (i = 0; i < 8; i++) {
+            for (int i = 0; i < 8; i++) {
                 strcpy(channel_name[i], "N.C.    ");
             }
         }
