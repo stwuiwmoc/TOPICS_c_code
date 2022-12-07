@@ -24,6 +24,8 @@ float CalcVoltageAtAdcBoardInput(float ad_conveted_count_value);
 
 float CalcIna2128Gain(int dnum_, int dnum_bias_, int channel_number);
 
+float CalcCurrentFromVoltage(float voltage_, float gain_, float current_measurement_resistor_);
+
 int main(int argc, char *argv[]) {
     int dnum_bias = 5;
     int dnum_clock = 4;
@@ -111,6 +113,9 @@ int main(int argc, char *argv[]) {
             // INA2128 のゲイン計算（Vdducラインのみゲインが異なる）
             float gain = CalcIna2128Gain(dnum, dnum_bias, k);
 
+            // 電流測定用抵抗の値の指定
+            float current_measurement_resistor = 1000; // [Ω]
+
             // 電流の平均値計算用の変数の初期化
             float current_sum = 0;
             float current_average = 0;
@@ -123,7 +128,7 @@ int main(int argc, char *argv[]) {
                 float adc_input_voltage = CalcVoltageAtAdcBoardInput(ad_converted_count_value);
 
                 // 電圧値を電流値に直す
-                float current_data = (adc_input_voltage / gain) / 1000.0 * pow(10, 6);
+                float current_data = CalcCurrentFromVoltage(adc_input_voltage, gain, current_measurement_resistor);
 
                 // 電流値を格納されたデータ分で平均する
                 current_sum += current_data;
@@ -246,4 +251,11 @@ float CalcIna2128Gain(int dnum_, int dnum_bias_, int channel_number) {
         gain_ = 1.0 + 50000.0 / gain_resistor; //計算式はINA2128のデータシートを参照
     }
     return gain_;
+}
+
+float CalcCurrentFromVoltage(float voltage_, float gain_, float current_measurement_resistor_) {
+    float voltage_drop_at_current_measurement_resistor = voltage_ / gain_; // [V]
+    float current_A = voltage_drop_at_current_measurement_resistor / current_measurement_resistor_; // [A]
+    float current_uA = current_A * pow(10, 6);
+    return current_uA;
 }
