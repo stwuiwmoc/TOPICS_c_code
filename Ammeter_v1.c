@@ -7,51 +7,7 @@
 #include "fbiad.h"
 
 void GetCommandLineArgument(int argc_, char **argv_, int *pDnum,
-                            int *pChannel_count, char **pFile_name) {
-    int ret = -1;
-
-    while (1) {
-        // getopt関数によってグローバル変数 optarg が定義される
-        ret = getopt(argc_, argv_, "hd:n:f:");
-
-        if (ret == -1) break;
-
-        switch (ret) {
-            case 'h':
-                // show help text
-                printf("\nhelp text will be added\n\n");
-                exit(0);
-                break;
-
-            case 'd':
-                *pDnum = atoi(optarg);
-                break;
-
-            case 'n':
-                *pChannel_count = atoi(optarg);
-                break;
-
-            case 'f': {
-                // 以下は複数の戻り値（文字列含む）を返すための処理 参考
-                // https://skpme.com/211/
-                char *cp = NULL;
-                cp = (char *)malloc(sizeof(char) * 100);
-                if (cp == NULL) {
-                    printf("メモリ不足で文字列配列の作成失敗\n");
-                }
-                strcpy(cp, optarg);
-                *pFile_name = cp;
-            } break;
-
-            case '?':
-                printf("???\n");
-                break;
-
-            default:
-                printf("?? getopt returned character code 0%o ??\n", ret);
-        }
-    }
-}
+                            int *pChannel_count, char **pFile_name);
 
 int main(int argc, char *argv[]) {
     int dnum_bias = 5;
@@ -186,4 +142,51 @@ int main(int argc, char *argv[]) {
     }
     nRet = AdClose(dnum);
     return 0;
+}
+
+void GetCommandLineArgument(int argc_, char **argv_, int *pDnum,
+                            int *pChannel_count, char **pFile_name) {
+    int ret = -1;
+
+    while (1) {
+        // getopt関数によってグローバル変数 optarg が定義される
+        ret = getopt(argc_, argv_, "hd:n:f:");
+
+        if (ret == -1) break;
+
+        switch (ret) {
+            case 'h':
+                // show help text
+                printf("\nhelp text will be added\n\n");
+                exit(0);
+                break;
+
+            case 'd':
+                *pDnum = atoi(optarg);
+                break;
+
+            case 'n':
+                *pChannel_count = atoi(optarg);
+                break;
+
+            case 'f': {
+                // 以下は複数の戻り値（文字列含む）を返すための処理 参考
+                // https://skpme.com/211/
+                char *cp = NULL;
+                cp = (char *)malloc(sizeof(char) * 100);
+                if (cp == NULL) {
+                    printf("メモリ不足で文字列配列の作成失敗\n");
+                }
+                strcpy(cp, optarg);
+                *pFile_name = cp;
+            } break;
+
+            case '?':
+                printf("???\n");
+                break;
+
+            default:
+                printf("?? getopt returned character code 0%o ??\n", ret);
+        }
+    }
 }
