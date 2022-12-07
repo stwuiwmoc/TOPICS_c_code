@@ -242,8 +242,8 @@ float CalcIna2128Gain(int dnum_, int dnum_bias_, int channel_number) {
     if (dnum_ == dnum_bias_ && channel_number == 5) {
         gain_ = 1;
     } else {
-        float gain_resistor = 2700.0;
-        gain_ = 1.0 + 50000.0 / gain_resistor;
+        float gain_resistor = 2700.0; //[Ω]
+        gain_ = 1.0 + 50000.0 / gain_resistor; //計算式はINA2128のデータシートを参照
     }
     return gain_;
 }
