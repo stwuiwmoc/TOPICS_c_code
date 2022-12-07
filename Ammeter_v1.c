@@ -58,6 +58,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    // ADCボードへのIOポートを開く
     int nRet;
     ADSMPLREQ AdSmplConfig;
     unsigned short sample_data[1024][channel_count];
@@ -94,7 +95,7 @@ int main(int argc, char *argv[]) {
         // データの取得
         AdGetSamplingData(dnum, sample_data, &ul_ad_sample_count);
 
-        // file open
+        // 保存用ファイルのopen
         FILE *fp;
         fp = fopen(file_name, "a+");
         if (fp == NULL) {
@@ -105,13 +106,16 @@ int main(int argc, char *argv[]) {
         float sum[channel_count];
         float ave[channel_count];
 
+        // 平均値計算用
         for (int i = 0; i < channel_count; i++) {
             sum[i] = 0.0;
             ave[i] = 0.0;
         }
 
+        // チャンネル毎に処理する
         for (int k = 0; k < channel_count; k++) {
 
+            // INA2128 のゲイン計算（Vdducラインのみゲインが異なる）
             float gain;
             if (dnum == dnum_bias && k == 5) {
                 gain = 1;
@@ -120,6 +124,7 @@ int main(int argc, char *argv[]) {
                 gain = 1.0 + 50000.0 / gain_resistor;
             }
 
+            // 一つのチャンネルに格納されたデータの処理
             for (unsigned long j = 0; j < ul_ad_sample_count; j++) {
 
                 // AD変換された読み出し値をアナログ電圧値に換算し直す
@@ -139,14 +144,16 @@ int main(int argc, char *argv[]) {
                     printf("%s ", channel_name[k]);
                     printf("(uA) = %.4f\n", ave[k]);
 
-                    // ファイルへの保存
+                    // 保存用ファイルへの書き込み
                     fprintf(fp, "%f ", ave[k]);
                 }
             }
         }
+
+        // 全チャンネル書き込み終わったら改行
         fprintf(fp, "\n");
 
-        // file close
+        // 保存用ファイルの close
         fclose(fp);
 
         printf("\n");
