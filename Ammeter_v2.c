@@ -386,6 +386,50 @@ float CalcCurrentFromVoltage(float voltage_, float gain_,
     return current_uA;
 }
 
+float CorrectCurrent(int dnum_, int dnum_bias_, int dnum_clock_,
+                     int channel_number, float current) {
+    // https://docs.google.com/presentation/d/14LhY2mEenaMbe8-yshJthJCao5gquMtkCEy4U5I3BjA/edit#slide=id.g1b3a2a70eb4_0_4
+    // 上のリンク先の各電圧ラインの傾きを a 、切片を b とする
+    // Y = aX + b
+    float corrected_current;
+
+    if (dnum_ == dnum_clock_) {
+        // クロックラインの場合
+
+        float a_clock_lines[7] = {
+            0.988,  // syncS
+            0.993,  // 1S
+            1.023,  // 2S
+            1.007,  // syncF
+            1.019,  // 1F
+            1.019,  // 2F
+            1.006   // rst
+        };
+        float b_clock_lines[7] = {
+            0.422,  // syncS
+            0.430,  // 1S
+            0.285,  // 2S
+            0.251,  // syncF
+            0.256,  // 1F
+            0.256,  // 2F
+            0.276   // rst
+        };
+        float a = a_clock_lines[channel_number];
+        float b = b_clock_lines[channel_number];
+        corrected_current = a * current + b;
+
+    } else if (dnum_ == dnum_bias_ && channel_number == 0) {
+        // V3 ラインの場合
+        float a = 0.988;
+        float b = -0.096;
+        corrected_current = a * current + b;
+    } else {
+        // それ以外の電圧ラインでは補正は行わない
+        corrected_current = current;
+    }
+    return corrected_current;
+}
+
 /**
  * @brief 現在日時を文字列として取得する
  *
