@@ -80,20 +80,20 @@ int main(int argc, char *argv[]) {
     }
 
     // 保存用ファイルの新規行に、入力されたコマンドライン引数を書き込み
-    FILE *fp;
-    fp = fopen(file_name, "a+");
-    if (fp == NULL) {
+    FILE *fp_current;
+    fp_current = fopen(file_name, "a+");
+    if (fp_current == NULL) {
         printf("cannot open\n");
         exit(1);
     } else {
-        fprintf(fp, "%s", argv[0]);
-        fprintf(fp, "-d %d ", dnum);
-        fprintf(fp, "-n %d ", channel_count);
-        fprintf(fp, "-c %d ", correction_mode);
-        fprintf(fp, "-f %s ", file_name);
-        fprintf(fp, "\n");
+        fprintf(fp_current, "%s", argv[0]);
+        fprintf(fp_current, "-d %d ", dnum);
+        fprintf(fp_current, "-n %d ", channel_count);
+        fprintf(fp_current, "-c %d ", correction_mode);
+        fprintf(fp_current, "-f %s ", file_name);
+        fprintf(fp_current, "\n");
     }
-    fclose(fp);
+    fclose(fp_current);
 
     // ADCボードへのIOポートを開く
     int nRet;
@@ -134,9 +134,9 @@ int main(int argc, char *argv[]) {
         AdGetSamplingData(dnum, sample_data, &ul_ad_sample_count);
 
         // 保存用ファイルのopen
-        FILE *fp;
-        fp = fopen(file_name, "a+");
-        if (fp == NULL) {
+        FILE *fp_current;
+        fp_current = fopen(file_name, "a+");
+        if (fp_current == NULL) {
             printf("cannot open\n");
             exit(1);
         }
@@ -146,7 +146,7 @@ int main(int argc, char *argv[]) {
         // 保存した時刻を書き込み
         char *local_time = NULL;
         GetLocalDatetimeInStr(&local_time);
-        fprintf(fp, "%s ", local_time);
+        fprintf(fp_current, "%s ", local_time);
 
         // mallocで動的にメモリを確保したので不要になったら開放
         free(local_time);
@@ -208,16 +208,16 @@ int main(int argc, char *argv[]) {
                     printf("(uA) = %.4f\n", current_average);
 
                     // 保存用ファイルへの書き込み
-                    fprintf(fp, "%f ", current_average);
+                    fprintf(fp_current, "%f ", current_average);
                 }
             }
         }
 
         // 全チャンネル書き込み終わったら改行
-        fprintf(fp, "\n");
+        fprintf(fp_current, "\n");
 
         // 保存用ファイルの close
-        fclose(fp);
+        fclose(fp_current);
 
         printf("\n");
     }
