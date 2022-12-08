@@ -51,9 +51,9 @@ int main(int argc, char *argv[]) {
     int dnum;
     int channel_count;
     int correction_mode;
-    char *file_name = "current.txt";
+    char *file_name_current = "current.txt";
     GetCommandLineArgument(argc, argv, &dnum, &channel_count, &correction_mode,
-                           &file_name);
+                           &file_name_current);
 
     // dnum に応じて表示するチャンネル名のラベルを書き換え
     char channel_name[8][9];
@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
 
     // 保存用ファイルの新規行に、入力されたコマンドライン引数を書き込み
     FILE *fp_current;
-    fp_current = fopen(file_name, "a+");
+    fp_current = fopen(file_name_current, "a+");
     if (fp_current == NULL) {
         printf("cannot open\n");
         exit(1);
@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
         fprintf(fp_current, "-d %d ", dnum);
         fprintf(fp_current, "-n %d ", channel_count);
         fprintf(fp_current, "-c %d ", correction_mode);
-        fprintf(fp_current, "-f %s ", file_name);
+        fprintf(fp_current, "-f %s ", file_name_current);
         fprintf(fp_current, "\n");
     }
     fclose(fp_current);
@@ -135,7 +135,7 @@ int main(int argc, char *argv[]) {
 
         // 保存用ファイルのopen
         FILE *fp_current;
-        fp_current = fopen(file_name, "a+");
+        fp_current = fopen(file_name_current, "a+");
         if (fp_current == NULL) {
             printf("cannot open\n");
             exit(1);
@@ -224,7 +224,7 @@ int main(int argc, char *argv[]) {
     nRet = AdClose(dnum);
 
     // mallocで動的にメモリを確保しているので、終了前にメモリを開放する
-    free(file_name);
+    free(file_name_current);
     return 0;
 }
 
