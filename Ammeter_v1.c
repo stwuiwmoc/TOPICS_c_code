@@ -2,7 +2,7 @@
  * @file Ammeter_v1.c
  * @author Kazuya Nagata
  * @brief
- * @version 1.6
+ * @version 1.7
  * @date 2022-12-07
  *
  * @copyright Copyright (c) 2022
@@ -132,6 +132,7 @@ int main(int argc, char *argv[]) {
         char *local_time = NULL;
         GetLocalDatetimeInStr(&local_time);
         fprintf(fp, "%s ", local_time);
+        free(local_time); // mallocで動的にメモリを確保しているので、不要になったらメモリ開放する
 
         // チャンネル毎に処理する
         for (int k = 0; k < channel_count; k++) {
@@ -178,7 +179,7 @@ int main(int argc, char *argv[]) {
         printf("\n");
     }
     nRet = AdClose(dnum);
-    free(file_name); // file_name はmallocで動的にメモリを確保しているので、終了前にメモリを開放する
+    free(file_name); // mallocで動的にメモリを確保しているので、終了前にメモリを開放する
     return 0;
 }
 
