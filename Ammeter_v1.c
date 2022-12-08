@@ -75,6 +75,7 @@ int main(int argc, char *argv[]) {
         printf("cannot open\n");
         exit(1);
     }
+    fprintf(fp, "%s", argv[0]);
     fprintf(fp, "-d %d ", dnum);
     fprintf(fp, "-n %d ", channel_count);
     fprintf(fp, "-f %s ", file_name);
