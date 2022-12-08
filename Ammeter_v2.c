@@ -199,6 +199,7 @@ int main(int argc, char *argv[]) {
  * @param argv_ コマンドライン引数のargv
  * @param pDnum ポインタ（引数 "-d" の値が格納される）
  * @param pChannel_count ポインタ（引数 "-n" の値が格納される）
+ * @param pCorrection_mode ポインタ（引数 "-c" の値が格納される）
  * @param pFile_name ポインタ（引数 "-f" の文字列が格納される）
  */
 void GetCommandLineArgument(int argc_, char **argv_, int *pDnum,
