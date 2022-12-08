@@ -2,7 +2,7 @@
  * @file Ammeter_v1.c
  * @author Kazuya Nagata
  * @brief
- * @version 1.5
+ * @version 1.6
  * @date 2022-12-07
  *
  * @copyright Copyright (c) 2022
@@ -74,11 +74,13 @@ int main(int argc, char *argv[]) {
     if (fp == NULL) {
         printf("cannot open\n");
         exit(1);
+    } else{
+        fprintf(fp, "%s", argv[0]);
+        fprintf(fp, "-d %d ", dnum);
+        fprintf(fp, "-n %d ", channel_count);
+        fprintf(fp, "-f %s ", file_name);
+        fprintf(fp, "\n");
     }
-    fprintf(fp, "-d %d ", dnum);
-    fprintf(fp, "-n %d ", channel_count);
-    fprintf(fp, "-f %s ", file_name);
-    fprintf(fp, "\n");
     fclose(fp);
 
     // ADCボードへのIOポートを開く
