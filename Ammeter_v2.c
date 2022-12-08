@@ -386,6 +386,16 @@ float CalcCurrentFromVoltage(float voltage_, float gain_,
     return current_uA;
 }
 
+/**
+ * @brief KENWOOD DL-97での測定結果から得られた係数を使って電流値を補正
+ *
+ * @param dnum_ 測定中のADCボードの番号
+ * @param dnum_bias_ バイアスラインを測定するADCボードの番号
+ * @param dnum_clock_ クロックラインを測定するADCボードの番号
+ * @param channel_number 測定中のチャンネルの番号
+ * @param current 補正前の電流値
+ * @return float 補正後の電流値
+ */
 float CorrectCurrent(int dnum_, int dnum_bias_, int dnum_clock_,
                      int channel_number, float current) {
     // https://docs.google.com/presentation/d/14LhY2mEenaMbe8-yshJthJCao5gquMtkCEy4U5I3BjA/edit#slide=id.g1b3a2a70eb4_0_4
