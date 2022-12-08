@@ -19,7 +19,8 @@
 #include "fbiad.h"
 
 void GetCommandLineArgument(int argc_, char **argv_, int *pDnum,
-                            int *pChannel_count, char **pFile_name);
+                            int *pChannel_count, int *pCorrection_mode,
+                            char **pFile_name);
 
 float CalcVoltageAtAdcBoardInput(float ad_conveted_count_value);
 
@@ -41,8 +42,10 @@ int main(int argc, char *argv[]) {
     // getopt関数を用いてコマンドライン引数を格納
     int dnum;
     int channel_count;
+    int correction_mode;
     char *file_name = "current.txt";
-    GetCommandLineArgument(argc, argv, &dnum, &channel_count, &file_name);
+    GetCommandLineArgument(argc, argv, &dnum, &channel_count, &correction_mode,
+                           &file_name);
 
     // dnum に応じて表示するチャンネル名のラベルを書き換え
     char channel_name[8][9];
@@ -198,12 +201,13 @@ int main(int argc, char *argv[]) {
  * @param pFile_name ポインタ（引数 "-f" の文字列が格納される）
  */
 void GetCommandLineArgument(int argc_, char **argv_, int *pDnum,
-                            int *pChannel_count, char **pFile_name) {
+                            int *pChannel_count, int *pCorrection_mode,
+                            char **pFile_name) {
     int ret = -1;
 
     while (1) {
         // getopt関数によってグローバル変数 optarg が定義される
-        ret = getopt(argc_, argv_, "hd:n:f:");
+        ret = getopt(argc_, argv_, "hd:n:c:f:");
 
         if (ret == -1) break;
 
@@ -220,6 +224,10 @@ void GetCommandLineArgument(int argc_, char **argv_, int *pDnum,
 
             case 'n':
                 *pChannel_count = atoi(optarg);
+                break;
+
+            case 'c':
+                *pCorrection_mode = atoi(optarg);
                 break;
 
             case 'f': {
