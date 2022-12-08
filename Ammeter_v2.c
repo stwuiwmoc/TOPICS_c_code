@@ -55,6 +55,19 @@ int main(int argc, char *argv[]) {
     GetCommandLineArgument(argc, argv, &dnum, &channel_count, &correction_mode,
                            &file_name_current);
 
+    // AD変換のみの生データを書き込むファイルのファイル名を作成
+    // 例 current.txt から current_raw.txt を作成
+    char *suffix = "_raw";
+    char *extension = ".txt";
+
+    char file_stem_current[strlen(file_name_current) -
+                           strlen(extension)];  // stem は拡張子を除いた部分
+    snprintf(file_stem_current,
+             strlen(file_name_current) - strlen(extension) + 1, "%s",
+             file_name_current);
+    char file_name_raw[strlen(file_name_current) + strlen(extension)];
+    sprintf(file_name_raw, "%s%s%s", file_stem_current, suffix, extension);
+
     // dnum に応じて表示するチャンネル名のラベルを書き換え
     char channel_name[8][9];
     if (dnum == dnum_bias) {
