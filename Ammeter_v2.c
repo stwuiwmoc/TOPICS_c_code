@@ -34,6 +34,9 @@ float CalcVoltageAtBufferBoardOutput(int dnum_, int dnum_bias_,
 float CalcCurrentFromVoltage(float voltage_, float gain_,
                              float current_measurement_resistor_);
 
+float CorrectCurrent(int dnum_, int dnum_bias_, int dnum_clock_,
+                     int channel_number, float current);
+
 void GetLocalDatetimeInStr(char **pLocal_datetime);
 
 int main(int argc, char *argv[]) {
@@ -186,6 +189,12 @@ int main(int argc, char *argv[]) {
                     CalcCurrentFromVoltage(buffer_board_output_voltage, gain,
                                            current_measurement_resistor);
 
+                if (correction_mode == 2 || correction_mode == 3) {
+                    // KENWOOD DL-97での校正結果をもとに電流値の補正を行う場合
+                    current_data = CorrectCurrent(dnum, dnum_bias, dnum_clock,
+                                                  k, current_data);
+                }
+
                 // 電流値を格納されたデータ分で平均する
                 current_sum += current_data;
                 current_average = current_sum / ul_ad_sample_count;
@@ -337,7 +346,7 @@ float CalcVoltageAtBufferBoardOutput(int dnum_, int dnum_bias_,
                                      float Vxx_adc_input_voltage,
                                      float Vsub_adc_input_voltage_) {
     float output_voltage;
-    if (dnum_ == dnum_bias_){
+    if (dnum_ == dnum_bias_) {
         // バイアスラインの場合
         if (channel_number == 0 || channel_number == 1) {
             // V3 または AGND ラインは
