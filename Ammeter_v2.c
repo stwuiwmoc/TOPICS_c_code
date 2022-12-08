@@ -2,7 +2,7 @@
  * @file Ammeter_v2.c
  * @author Kazuya Nagata
  * @brief
- * @version 1.1
+ * @version 1.2
  * @date 2022-12-09
  *
  * @copyright Copyright (c) 2022
@@ -33,6 +33,9 @@ float CalcVoltageAtBufferBoardOutput(int dnum_, int dnum_bias_,
 
 float CalcCurrentFromVoltage(float voltage_, float gain_,
                              float current_measurement_resistor_);
+
+float CorrectCurrent(int dnum_, int dnum_bias_, int dnum_clock_,
+                     int channel_number, float current);
 
 void GetLocalDatetimeInStr(char **pLocal_datetime);
 
@@ -137,6 +140,8 @@ int main(int argc, char *argv[]) {
             printf("cannot open\n");
             exit(1);
         }
+        // 補正モードを表示
+        printf("-d = %d\n", correction_mode);
 
         // 保存した時刻を書き込み
         char *local_time = NULL;
@@ -185,6 +190,12 @@ int main(int argc, char *argv[]) {
                 float current_data =
                     CalcCurrentFromVoltage(buffer_board_output_voltage, gain,
                                            current_measurement_resistor);
+
+                if (correction_mode == 2 || correction_mode == 3) {
+                    // KENWOOD DL-97での校正結果をもとに電流値の補正を行う場合
+                    current_data = CorrectCurrent(dnum, dnum_bias, dnum_clock,
+                                                  k, current_data);
+                }
 
                 // 電流値を格納されたデータ分で平均する
                 current_sum += current_data;
@@ -337,7 +348,7 @@ float CalcVoltageAtBufferBoardOutput(int dnum_, int dnum_bias_,
                                      float Vxx_adc_input_voltage,
                                      float Vsub_adc_input_voltage_) {
     float output_voltage;
-    if (dnum_ == dnum_bias_){
+    if (dnum_ == dnum_bias_) {
         // バイアスラインの場合
         if (channel_number == 0 || channel_number == 1) {
             // V3 または AGND ラインは
@@ -375,6 +386,60 @@ float CalcCurrentFromVoltage(float voltage_, float gain_,
     // [uA] に単位換算
     float current_uA = current_A * pow(10, 6);
     return current_uA;
+}
+
+/**
+ * @brief KENWOOD DL-97での測定結果から得られた係数を使って電流値を補正
+ *
+ * @param dnum_ 測定中のADCボードの番号
+ * @param dnum_bias_ バイアスラインを測定するADCボードの番号
+ * @param dnum_clock_ クロックラインを測定するADCボードの番号
+ * @param channel_number 測定中のチャンネルの番号
+ * @param current 補正前の電流値
+ * @return float 補正後の電流値
+ */
+float CorrectCurrent(int dnum_, int dnum_bias_, int dnum_clock_,
+                     int channel_number, float current) {
+    // https://docs.google.com/presentation/d/14LhY2mEenaMbe8-yshJthJCao5gquMtkCEy4U5I3BjA/edit#slide=id.g1b3a2a70eb4_0_4
+    // 上のリンク先の各電圧ラインの傾きを a 、切片を b とする
+    // Y = aX + b
+    float corrected_current;
+
+    if (dnum_ == dnum_clock_) {
+        // クロックラインの場合
+
+        float a_clock_lines[7] = {
+            0.988,  // syncS
+            0.993,  // 1S
+            1.023,  // 2S
+            1.007,  // syncF
+            1.019,  // 1F
+            1.019,  // 2F
+            1.006   // rst
+        };
+        float b_clock_lines[7] = {
+            0.422,  // syncS
+            0.430,  // 1S
+            0.285,  // 2S
+            0.251,  // syncF
+            0.256,  // 1F
+            0.256,  // 2F
+            0.276   // rst
+        };
+        float a = a_clock_lines[channel_number];
+        float b = b_clock_lines[channel_number];
+        corrected_current = a * current + b;
+
+    } else if (dnum_ == dnum_bias_ && channel_number == 0) {
+        // V3 ラインの場合
+        float a = 0.988;
+        float b = -0.096;
+        corrected_current = a * current + b;
+    } else {
+        // それ以外の電圧ラインでは補正は行わない
+        corrected_current = current;
+    }
+    return corrected_current;
 }
 
 /**
