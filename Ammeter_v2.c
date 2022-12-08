@@ -351,7 +351,7 @@ float CalcVoltageAtBufferBoardOutput(int dnum_, int dnum_bias_,
     } else {
         // クロックラインの場合
         // 全てクロックバッファボードからの出力のためAGNDずれは発生せず、補正は不要
-        output_voltage == Vxx_adc_input_voltage;
+        output_voltage = Vxx_adc_input_voltage;
     }
     return output_voltage;
 }
