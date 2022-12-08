@@ -26,6 +26,10 @@ float CalcVoltageAtAdcBoardInput(float ad_conveted_count_value);
 
 float CalcIna2128Gain(int dnum_, int dnum_bias_, int channel_number);
 
+float CalcBiasBufferBoardOutputVoltage(int channel_number,
+                                       float Vxx_adc_input_voltage,
+                                       float Vsub_adc_input_voltage_);
+
 float CalcCurrentFromVoltage(float voltage_, float gain_,
                              float current_measurement_resistor_);
 
@@ -158,16 +162,28 @@ int main(int argc, char *argv[]) {
                     CalcVoltageAtAdcBoardInput(ad_converted_count_value);
 
                 float buffer_board_output_voltage;
-                // バイアスラインの測定で、かつバイアスバッファボードの補正を行う場合
-                if (dnum == dnum_bias && (correction_mode == 1 || correction_mode == 3)) {
-                    buffer_board_output_voltage = adc_input_voltage;
+                if (dnum == dnum_bias &&
+                    (correction_mode == 1 || correction_mode == 3)) {
+                    // バイアスラインの測定で、かつバイアスバッファボードの補正を行う場合
+
+                    // Vsubラインのアナログ電圧値を計算
+                    float Vsub_ad_converted_count_value = sample_data[j][k];
+                    float Vsub_adc_input_voltage = CalcVoltageAtAdcBoardInput(
+                        Vsub_ad_converted_count_value);
+
+                    // バイアスバッファボードの補正を行う
+                    buffer_board_output_voltage =
+                        CalcBiasBufferBoardOutputVoltage(
+                            k, adc_input_voltage, Vsub_adc_input_voltage);
+
                 } else {
                     buffer_board_output_voltage = adc_input_voltage;
                 }
 
                 // 電圧値を電流値に直す
-                float current_data = CalcCurrentFromVoltage(
-                    buffer_board_output_voltage, gain, current_measurement_resistor);
+                float current_data =
+                    CalcCurrentFromVoltage(buffer_board_output_voltage, gain,
+                                           current_measurement_resistor);
 
                 // 電流値を格納されたデータ分で平均する
                 current_sum += current_data;
