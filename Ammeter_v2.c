@@ -81,6 +81,7 @@ int main(int argc, char *argv[]) {
         fprintf(fp, "%s", argv[0]);
         fprintf(fp, "-d %d ", dnum);
         fprintf(fp, "-n %d ", channel_count);
+        fprintf(fp, "-c %d ", correction_mode);
         fprintf(fp, "-f %s ", file_name);
         fprintf(fp, "\n");
     }
