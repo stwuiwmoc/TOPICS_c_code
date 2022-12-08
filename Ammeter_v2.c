@@ -26,7 +26,7 @@ float CalcVoltageAtAdcBoardInput(float ad_conveted_count_value);
 
 float CalcIna2128Gain(int dnum_, int dnum_bias_, int channel_number);
 
-float CalcBiasBufferBoardOutputVoltage(int channel_number,
+float CalcVoltageAtBiasBufferBoardOutput(int channel_number,
                                        float Vxx_adc_input_voltage,
                                        float Vsub_adc_input_voltage_);
 
@@ -173,7 +173,7 @@ int main(int argc, char *argv[]) {
 
                     // バイアスバッファボードの補正を行う
                     buffer_board_output_voltage =
-                        CalcBiasBufferBoardOutputVoltage(
+                        CalcVoltageAtBiasBufferBoardOutput(
                             k, adc_input_voltage, Vsub_adc_input_voltage);
 
                 } else {
@@ -329,7 +329,7 @@ float CalcIna2128Gain(int dnum_, int dnum_bias_, int channel_number) {
  * @param Vsub_adc_input_voltage_ Vsubラインのadcボードの入力電圧
  * @return float AGNDずれが補正された電圧
  */
-float CalcBiasBufferBoardOutputVoltage(int channel_number,
+float CalcVoltageAtBiasBufferBoardOutput(int channel_number,
                                        float Vxx_adc_input_voltage,
                                        float Vsub_adc_input_voltage_) {
 
