@@ -13,8 +13,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "fbiad.h"
 
@@ -25,18 +25,18 @@ float CalcVoltageAtAdcBoardInput(float ad_conveted_count_value);
 
 float CalcIna2128Gain(int dnum_, int dnum_bias_, int channel_number);
 
-float CalcCurrentFromVoltage(float voltage_, float gain_, float current_measurement_resistor_);
+float CalcCurrentFromVoltage(float voltage_, float gain_,
+                             float current_measurement_resistor_);
 
 void GetLocalDatetimeInStr(char **pLocal_datetime);
 
 int main(int argc, char *argv[]) {
-
     // バイアスライン・クロックラインからそれぞれ繋がっているADCボードの番号を指定
     int dnum_bias = 5;
     int dnum_clock = 4;
 
     // 電流測定用抵抗の値の指定
-    float current_measurement_resistor = 1000; // [Ω]
+    float current_measurement_resistor = 1000;  // [Ω]
 
     // getopt関数を用いてコマンドライン引数を格納
     int dnum;
@@ -47,17 +47,17 @@ int main(int argc, char *argv[]) {
     // dnum に応じて表示するチャンネル名のラベルを書き換え
     char channel_name[8][9];
     if (dnum == dnum_bias) {
-        char channel_name_bias[8][9] = {
-            "V3      ", "AGND    ", "Vdet    ", "Vdetgate",
-            "Vddout  ", "Vdduc   ", "Vgg     ", "Vsub    "};
+        char channel_name_bias[8][9] = {"V3      ", "AGND    ", "Vdet    ",
+                                        "Vdetgate", "Vddout  ", "Vdduc   ",
+                                        "Vgg     ", "Vsub    "};
 
         for (int i = 0; i < channel_count; i++) {
             strcpy(channel_name[i], channel_name_bias[i]);
         }
     } else if (dnum == dnum_clock) {
-        char channel_name_clock[8][9] = {
-            "syncS   ", "1S      ", "2S      ", "syncF   ",
-            "1F      ", "2F      ", "rst     ", "N.C.    "};
+        char channel_name_clock[8][9] = {"syncS   ", "1S      ", "2S      ",
+                                         "syncF   ", "1F      ", "2F      ",
+                                         "rst     ", "N.C.    "};
 
         for (int i = 0; i < channel_count; i++) {
             strcpy(channel_name[i], channel_name_clock[i]);
@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
     if (fp == NULL) {
         printf("cannot open\n");
         exit(1);
-    } else{
+    } else {
         fprintf(fp, "%s", argv[0]);
         fprintf(fp, "-d %d ", dnum);
         fprintf(fp, "-n %d ", channel_count);
@@ -115,7 +115,8 @@ int main(int argc, char *argv[]) {
         unsigned long ul_ad_sample_status;
         unsigned long ul_ad_sample_count;
         unsigned long ul_ad_available_count;
-        AdGetStatus(dnum, &ul_ad_sample_status, &ul_ad_sample_count, &ul_ad_available_count);
+        AdGetStatus(dnum, &ul_ad_sample_status, &ul_ad_sample_count,
+                    &ul_ad_available_count);
 
         // データの取得
         AdGetSamplingData(dnum, sample_data, &ul_ad_sample_count);
@@ -132,11 +133,12 @@ int main(int argc, char *argv[]) {
         char *local_time = NULL;
         GetLocalDatetimeInStr(&local_time);
         fprintf(fp, "%s ", local_time);
-        free(local_time); // mallocで動的にメモリを確保しているので、不要になったらメモリ開放する
+
+        // mallocで動的にメモリを確保したので不要になったら開放
+        free(local_time);
 
         // チャンネル毎に処理する
         for (int k = 0; k < channel_count; k++) {
-
             // INA2128 のゲイン計算（Vdducラインのみゲインが異なる）
             float gain = CalcIna2128Gain(dnum, dnum_bias, k);
 
@@ -146,13 +148,14 @@ int main(int argc, char *argv[]) {
 
             // 一つのチャンネルに格納されたデータの処理
             for (unsigned long j = 0; j < ul_ad_sample_count; j++) {
-
                 // AD変換された読み出し値をアナログ電圧値に換算し直す
                 float ad_converted_count_value = sample_data[j][k];
-                float adc_input_voltage = CalcVoltageAtAdcBoardInput(ad_converted_count_value);
+                float adc_input_voltage =
+                    CalcVoltageAtAdcBoardInput(ad_converted_count_value);
 
                 // 電圧値を電流値に直す
-                float current_data = CalcCurrentFromVoltage(adc_input_voltage, gain, current_measurement_resistor);
+                float current_data = CalcCurrentFromVoltage(
+                    adc_input_voltage, gain, current_measurement_resistor);
 
                 // 電流値を格納されたデータ分で平均する
                 current_sum += current_data;
@@ -179,7 +182,9 @@ int main(int argc, char *argv[]) {
         printf("\n");
     }
     nRet = AdClose(dnum);
-    free(file_name); // mallocで動的にメモリを確保しているので、終了前にメモリを開放する
+
+    // mallocで動的にメモリを確保しているので、終了前にメモリを開放する
+    free(file_name);
     return 0;
 }
 
@@ -240,7 +245,8 @@ void GetCommandLineArgument(int argc_, char **argv_, int *pDnum,
 }
 
 /**
- * @brief AD変換された読み出しデータをADCボード入力時点でのアナログ電圧値[V]に換算し直す
+ * @brief
+ * AD変換された読み出しデータをADCボード入力時点でのアナログ電圧値[V]に換算し直す
  *
  * @param ad_conveted_count_value_ float AD変換された読み出し値
  * @return float [V] ADCボード入力時点でのアナログ電圧値
@@ -248,12 +254,14 @@ void GetCommandLineArgument(int argc_, char **argv_, int *pDnum,
 float CalcVoltageAtAdcBoardInput(float ad_conveted_count_value_) {
     float adc_resolution = pow(2.0, 16.0);
 
-    float input_min_voltage = -10.0; // [V]
-    float input_max_voltage = +10.0; // [V]
+    float input_min_voltage = -10.0;  // [V]
+    float input_max_voltage = +10.0;  // [V]
 
-    float input_voltage_range = input_max_voltage - input_min_voltage;
+    float voltage_range = input_max_voltage - input_min_voltage;
 
-    float input_voltage = ad_conveted_count_value_ * (input_voltage_range / adc_resolution) + input_min_voltage;
+    float input_voltage =
+        ad_conveted_count_value_ * (voltage_range / adc_resolution) +
+        input_min_voltage;
 
     return input_voltage;
 }
@@ -271,8 +279,10 @@ float CalcIna2128Gain(int dnum_, int dnum_bias_, int channel_number) {
     if (dnum_ == dnum_bias_ && channel_number == 5) {
         gain_ = 1;
     } else {
-        float gain_resistor = 2700.0; //[Ω]
-        gain_ = 1.0 + 50000.0 / gain_resistor; //計算式はINA2128のデータシートを参照
+        float gain_resistor = 2700.0;  //[Ω]
+
+        // 計算式はINA2128のデータシートを参照
+        gain_ = 1.0 + 50000.0 / gain_resistor;
     }
     return gain_;
 }
@@ -285,12 +295,13 @@ float CalcIna2128Gain(int dnum_, int dnum_bias_, int channel_number) {
  * @param current_measurement_resistor_ [Ω] 電流測定用抵抗の値
  * @return float [uA] 各電圧ラインで流れる電流値
  */
-float CalcCurrentFromVoltage(float voltage_, float gain_, float current_measurement_resistor_) {
+float CalcCurrentFromVoltage(float voltage_, float gain_,
+                             float current_measurement_resistor_) {
     // 差動増幅前の値、つまり電流測定用抵抗出の電圧降下を計算
-    float voltage_drop_at_current_measurement_resistor = voltage_ / gain_; // [V]
+    float voltage_drop = voltage_ / gain_;  // [V]
 
     // 電圧降下から流れる電流を計算
-    float current_A = voltage_drop_at_current_measurement_resistor / current_measurement_resistor_; // [A]
+    float current_A = voltage_drop / current_measurement_resistor_;  // [A]
 
     // [uA] に単位換算
     float current_uA = current_A * pow(10, 6);
@@ -303,15 +314,15 @@ float CalcCurrentFromVoltage(float voltage_, float gain_, float current_measurem
  * @param pLocal_datetime ポインタ（文字列が保存される）
  */
 void GetLocalDatetimeInStr(char **pLocal_datetime) {
-
-    // 現在日時を文字列として取得 参考 https://www.ibm.com/docs/ja/zos/2.4.0?topic=functions-strftime-convert-formatted-time
+    // 現在日時を文字列として取得 参考
+    // https://www.ibm.com/docs/ja/zos/2.4.0?topic=functions-strftime-convert-formatted-time
     char local_datetime[100];
     time_t temp;
     struct tm *timeptr;
 
     temp = time(NULL);
     timeptr = localtime(&temp);
-    strftime(local_datetime, sizeof(local_datetime)-1, "%x-%X", timeptr);
+    strftime(local_datetime, sizeof(local_datetime) - 1, "%x-%X", timeptr);
 
     // 以下は文字列を引数として返すための処理 参考 https://skpme.com/211/
     char *cp = NULL;
