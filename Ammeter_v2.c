@@ -167,7 +167,7 @@ int main(int argc, char *argv[]) {
                     // バイアスラインの測定で、かつバイアスバッファボードの補正を行う場合
 
                     // Vsubラインのアナログ電圧値を計算
-                    float Vsub_ad_converted_count_value = sample_data[j][k];
+                    float Vsub_ad_converted_count_value = sample_data[j][7];
                     float Vsub_adc_input_voltage = CalcVoltageAtAdcBoardInput(
                         Vsub_ad_converted_count_value);
 
@@ -319,6 +319,30 @@ float CalcIna2128Gain(int dnum_, int dnum_bias_, int channel_number) {
         gain_ = 1.0 + 50000.0 / gain_resistor;
     }
     return gain_;
+}
+
+/**
+ * @brief Vsubラインを用いてバイアスバッファボードのAGNDずれを補正する
+ *
+ * @param channel_number 測定中のチャンネルの番号
+ * @param Vxx_adc_input_voltage 各電圧ラインのadcボードの入力電圧
+ * @param Vsub_adc_input_voltage_ Vsubラインのadcボードの入力電圧
+ * @return float AGNDずれが補正された電圧
+ */
+float CalcBiasBufferBoardOutputVoltage(int channel_number,
+                                       float Vxx_adc_input_voltage,
+                                       float Vsub_adc_input_voltage_) {
+
+    float output_voltage;
+    if (channel_number == 0 || channel_number == 1) {
+        // V3 または AGND ラインの場合は
+        // バイアスバッファボードの出力ではないので補正は行わない
+        output_voltage = Vxx_adc_input_voltage;
+    } else {
+        // それ以外の電圧ラインの場合は補正を行う
+        output_voltage = Vxx_adc_input_voltage - Vsub_adc_input_voltage_;
+    }
+    return output_voltage;
 }
 
 /**
