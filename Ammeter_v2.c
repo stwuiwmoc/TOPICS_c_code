@@ -2,7 +2,7 @@
  * @file Ammeter_v2.c
  * @author Kazuya Nagata
  * @brief
- * @version 1.2
+ * @version 2.0
  * @date 2022-12-09
  *
  * @copyright Copyright (c) 2022
@@ -51,9 +51,22 @@ int main(int argc, char *argv[]) {
     int dnum;
     int channel_count;
     int correction_mode;
-    char *file_name = "current.txt";
+    char *file_name_current = "current.txt";
     GetCommandLineArgument(argc, argv, &dnum, &channel_count, &correction_mode,
-                           &file_name);
+                           &file_name_current);
+
+    // AD変換のみの生データを書き込むファイルのファイル名を作成
+    // 例 current.txt から current_raw.txt を作成
+    char *suffix = "_raw";
+    char *extension = ".txt";
+
+    char file_stem_current[strlen(file_name_current) -
+                           strlen(extension)];  // stem は拡張子を除いた部分
+    snprintf(file_stem_current,
+             strlen(file_name_current) - strlen(extension) + 1, "%s",
+             file_name_current);
+    char file_name_raw[strlen(file_name_current) + strlen(extension)];
+    sprintf(file_name_raw, "%s%s%s", file_stem_current, suffix, extension);
 
     // dnum に応じて表示するチャンネル名のラベルを書き換え
     char channel_name[8][9];
@@ -80,20 +93,35 @@ int main(int argc, char *argv[]) {
     }
 
     // 保存用ファイルの新規行に、入力されたコマンドライン引数を書き込み
-    FILE *fp;
-    fp = fopen(file_name, "a+");
-    if (fp == NULL) {
+    FILE *fp_current;
+    fp_current = fopen(file_name_current, "a+");
+    if (fp_current == NULL) {
         printf("cannot open\n");
         exit(1);
     } else {
-        fprintf(fp, "%s", argv[0]);
-        fprintf(fp, "-d %d ", dnum);
-        fprintf(fp, "-n %d ", channel_count);
-        fprintf(fp, "-c %d ", correction_mode);
-        fprintf(fp, "-f %s ", file_name);
-        fprintf(fp, "\n");
+        fprintf(fp_current, "%s ", argv[0]);
+        fprintf(fp_current, "-d %d ", dnum);
+        fprintf(fp_current, "-n %d ", channel_count);
+        fprintf(fp_current, "-c %d ", correction_mode);
+        fprintf(fp_current, "-f %s ", file_name_current);
+        fprintf(fp_current, "\n");
     }
-    fclose(fp);
+    fclose(fp_current);
+
+    FILE *fp_raw;
+    fp_raw = fopen(file_name_raw, "a+");
+    if (fp_raw == NULL) {
+        printf("cannot open\n");
+        exit(1);
+    } else {
+        fprintf(fp_raw, "%s ", argv[0]);
+        fprintf(fp_raw, "-d %d ", dnum);
+        fprintf(fp_raw, "-n %d ", channel_count);
+        fprintf(fp_raw, "-c %d ", correction_mode);
+        fprintf(fp_raw, "-f %s ", file_name_current);
+        fprintf(fp_raw, "\n");
+    }
+    fclose(fp_raw);
 
     // ADCボードへのIOポートを開く
     int nRet;
@@ -134,19 +162,28 @@ int main(int argc, char *argv[]) {
         AdGetSamplingData(dnum, sample_data, &ul_ad_sample_count);
 
         // 保存用ファイルのopen
-        FILE *fp;
-        fp = fopen(file_name, "a+");
-        if (fp == NULL) {
+        FILE *fp_current;
+        fp_current = fopen(file_name_current, "a+");
+        if (fp_current == NULL) {
             printf("cannot open\n");
             exit(1);
         }
+
+        FILE *fp_raw;
+        fp_raw = fopen(file_name_raw, "a+");
+        if (fp_raw == NULL) {
+            printf("cannot open\n");
+            exit(1);
+        }
+
         // 補正モードを表示
         printf("-d = %d\n", correction_mode);
 
         // 保存した時刻を書き込み
         char *local_time = NULL;
         GetLocalDatetimeInStr(&local_time);
-        fprintf(fp, "%s ", local_time);
+        fprintf(fp_current, "%s ", local_time);
+        fprintf(fp_raw, "%s ", local_time);
 
         // mallocで動的にメモリを確保したので不要になったら開放
         free(local_time);
@@ -208,23 +245,26 @@ int main(int argc, char *argv[]) {
                     printf("(uA) = %.4f\n", current_average);
 
                     // 保存用ファイルへの書き込み
-                    fprintf(fp, "%f ", current_average);
+                    fprintf(fp_current, "%f ", current_average);
+                    fprintf(fp_raw, "%u ", sample_data[0][k]);
                 }
             }
         }
 
         // 全チャンネル書き込み終わったら改行
-        fprintf(fp, "\n");
+        fprintf(fp_current, "\n");
+        fprintf(fp_raw, "\n");
 
         // 保存用ファイルの close
-        fclose(fp);
+        fclose(fp_current);
+        fclose(fp_raw);
 
         printf("\n");
     }
     nRet = AdClose(dnum);
 
     // mallocで動的にメモリを確保しているので、終了前にメモリを開放する
-    free(file_name);
+    free(file_name_current);
     return 0;
 }
 
