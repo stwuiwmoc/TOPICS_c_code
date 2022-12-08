@@ -158,8 +158,8 @@ int main(int argc, char *argv[]) {
                     CalcVoltageAtAdcBoardInput(ad_converted_count_value);
 
                 float buffer_board_output_voltage;
-                if (correction_mode == 1 || correction_mode == 3) {
-                    // バイアスバッファボードの補正を行う場合
+                // バイアスラインの測定で、かつバイアスバッファボードの補正を行う場合
+                if (dnum == dnum_bias && (correction_mode == 1 || correction_mode == 3)) {
                     buffer_board_output_voltage = adc_input_voltage;
                 } else {
                     buffer_board_output_voltage = adc_input_voltage;
