@@ -157,9 +157,17 @@ int main(int argc, char *argv[]) {
                 float adc_input_voltage =
                     CalcVoltageAtAdcBoardInput(ad_converted_count_value);
 
+                float buffer_board_output_voltage;
+                if (correction_mode == 1 || correction_mode == 3) {
+                    // バイアスバッファボードの補正を行う場合
+                    buffer_board_output_voltage = adc_input_voltage;
+                } else {
+                    buffer_board_output_voltage = adc_input_voltage;
+                }
+
                 // 電圧値を電流値に直す
                 float current_data = CalcCurrentFromVoltage(
-                    adc_input_voltage, gain, current_measurement_resistor);
+                    buffer_board_output_voltage, gain, current_measurement_resistor);
 
                 // 電流値を格納されたデータ分で平均する
                 current_sum += current_data;
