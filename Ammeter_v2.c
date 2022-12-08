@@ -2,7 +2,7 @@
  * @file Ammeter_v2.c
  * @author Kazuya Nagata
  * @brief
- * @version 0.2
+ * @version 1.1
  * @date 2022-12-09
  *
  * @copyright Copyright (c) 2022
@@ -25,6 +25,11 @@ void GetCommandLineArgument(int argc_, char **argv_, int *pDnum,
 float CalcVoltageAtAdcBoardInput(float ad_conveted_count_value);
 
 float CalcIna2128Gain(int dnum_, int dnum_bias_, int channel_number);
+
+float CalcVoltageAtBufferBoardOutput(int dnum_, int dnum_bias_,
+                                     int channel_number,
+                                     float Vxx_adc_input_voltage,
+                                     float Vsub_adc_input_voltage_);
 
 float CalcCurrentFromVoltage(float voltage_, float gain_,
                              float current_measurement_resistor_);
@@ -157,9 +162,29 @@ int main(int argc, char *argv[]) {
                 float adc_input_voltage =
                     CalcVoltageAtAdcBoardInput(ad_converted_count_value);
 
+                float buffer_board_output_voltage;
+                if (correction_mode == 1 || correction_mode == 3) {
+                    // バッファボードのAGNDずれの補正を行う場合
+
+                    // Vsubラインのアナログ電圧値を計算（補正で必要）
+                    float Vsub_ad_converted_count_value = sample_data[j][7];
+                    float Vsub_adc_input_voltage = CalcVoltageAtAdcBoardInput(
+                        Vsub_ad_converted_count_value);
+
+                    // バイアスバッファボードの補正を行う
+                    buffer_board_output_voltage =
+                        CalcVoltageAtBufferBoardOutput(dnum, dnum_bias, k,
+                                                       adc_input_voltage,
+                                                       Vsub_adc_input_voltage);
+
+                } else {
+                    buffer_board_output_voltage = adc_input_voltage;
+                }
+
                 // 電圧値を電流値に直す
-                float current_data = CalcCurrentFromVoltage(
-                    adc_input_voltage, gain, current_measurement_resistor);
+                float current_data =
+                    CalcCurrentFromVoltage(buffer_board_output_voltage, gain,
+                                           current_measurement_resistor);
 
                 // 電流値を格納されたデータ分で平均する
                 current_sum += current_data;
@@ -295,6 +320,40 @@ float CalcIna2128Gain(int dnum_, int dnum_bias_, int channel_number) {
         gain_ = 1.0 + 50000.0 / gain_resistor;
     }
     return gain_;
+}
+
+/**
+ * @brief Vsubラインを用いてバイアスバッファボードのAGNDずれを補正する
+ *
+ * @param dnum_ 測定中のADCボードの番号
+ * @param dnum_bias_ バイアスラインを測定するADCボードの番号
+ * @param channel_number 測定中のチャンネルの番号
+ * @param Vxx_adc_input_voltage 各電圧ラインのadcボードの入力電圧
+ * @param Vsub_adc_input_voltage_ Vsubラインのadcボードの入力電圧
+ * @return float AGNDずれが補正された電圧
+ */
+float CalcVoltageAtBufferBoardOutput(int dnum_, int dnum_bias_,
+                                     int channel_number,
+                                     float Vxx_adc_input_voltage,
+                                     float Vsub_adc_input_voltage_) {
+    float output_voltage;
+    if (dnum_ == dnum_bias_){
+        // バイアスラインの場合
+        if (channel_number == 0 || channel_number == 1) {
+            // V3 または AGND ラインは
+            // クロックバッファボードからの出力のためAGNDずれは発生せず、補正は不要
+            output_voltage = Vxx_adc_input_voltage;
+        } else {
+            // バイアスラインの V3 と AGND 以外の電圧ラインは
+            // バイアスバッファボードからの出力のためAGNDずれが発生、補正が必要
+            output_voltage = Vxx_adc_input_voltage - Vsub_adc_input_voltage_;
+        }
+    } else {
+        // クロックラインの場合
+        // 全てクロックバッファボードからの出力のためAGNDずれは発生せず、補正は不要
+        output_voltage = Vxx_adc_input_voltage;
+    }
+    return output_voltage;
 }
 
 /**
