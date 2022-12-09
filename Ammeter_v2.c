@@ -2,7 +2,7 @@
  * @file Ammeter_v2.c
  * @author Kazuya Nagata
  * @brief
- * @version 2.0
+ * @version 2.1
  * @date 2022-12-09
  *
  * @copyright Copyright (c) 2022
