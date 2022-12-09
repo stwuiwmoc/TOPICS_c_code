@@ -50,10 +50,10 @@ int main(int argc, char *argv[]) {
     float current_measurement_resistor = 1000;  // [Ω]
 
     // getopt関数を用いてコマンドライン引数を格納
-    int dnum;
-    int channel_count;
-    int correction_mode;
-    char *file_name_current = "current.txt";
+    int dnum = 5;
+    int channel_count = 8;
+    int correction_mode = 3;
+    char *file_name_current = "bias_current.txt";
     GetCommandLineArgument(argc, argv, &dnum, &channel_count, &correction_mode,
                            &file_name_current);
 
