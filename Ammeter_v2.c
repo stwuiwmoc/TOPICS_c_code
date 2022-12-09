@@ -22,6 +22,8 @@ void GetCommandLineArgument(int argc_, char **argv_, int *pDnum,
                             int *pChannel_count, int *pCorrection_mode,
                             char **pFile_name);
 
+void ShowHelpText(void);
+
 float CalcVoltageAtAdcBoardInput(float ad_conveted_count_value);
 
 float CalcIna2128Gain(int dnum_, int dnum_bias_, int channel_number);
@@ -292,7 +294,7 @@ void GetCommandLineArgument(int argc_, char **argv_, int *pDnum,
         switch (ret) {
             case 'h':
                 // show help text
-                printf("\nhelp text will be added\n\n");
+                ShowHelpText();
                 exit(0);
                 break;
 
@@ -328,6 +330,41 @@ void GetCommandLineArgument(int argc_, char **argv_, int *pDnum,
                 printf("?? getopt returned character code 0%o ??\n", ret);
         }
     }
+}
+
+void ShowHelpText(void) {
+    printf("\n");
+    printf("=============== Usage ===============\n");
+    printf("\n");
+    printf("'-h' ヘルプ\n");
+    printf("    ヘルプを表示し、プログラムを終了します。\n");
+    printf("\n");
+    printf("'-d' デバイス識別番号\n");
+    printf("    測定に使用するADCボードの識別用番号を以下から選んで入力してください。\n");
+    printf("        4 : clock lines [syncS, 1S, 2S, syncF, 1F, 2F, rst]\n");
+    printf("        5 : bias lines [V3, AGND, Vdet, Vdetgate, Vddout, Vdduc, Vgg, Vsub]\n");
+    printf("    この番号はLPC-321416 / LPC-321216 の物理ロータリースイッチ RSW1 の番号と対応しています。\n");
+    printf("    使用するADCボードや RSW1 の番号を変更する場合には、\n");
+    printf("    本プログラムのソースコード中の変数 dnum_bias dnum_clock の値も合わせて変更してください。\n");
+    printf("\n");
+    printf("'-n' 測定チャンネル数\n");
+    printf("    測定を行うチャンネルの数を 1 ~ 8 の整数値で入力してください。\n");
+    printf("\n");
+    printf("'-c' 補正モード\n");
+    printf("    表示・保存する電流値に対して各種補正の有無を、以下から選んで入力してください。\n");
+    printf("        0 : 補正を一切行わずに出力します\n");
+    printf("        1 : バイアスバッファボードから出力される電圧ラインに対して、AGNDずれの補正を行います。\n");
+    printf("        2 : クロックバッファボードから出力される電圧ラインに対して、校正結果に近づける補正を行います。\n");
+    printf("        3 : 1 と 2 の補正を両方行います。\n");
+    printf("    これらの補正内容の詳細については、Nagata (2022) を参照してください。\n");
+    printf("    補正の根拠となった校正結果については、ソースコード中の該当関数のコメントアウトに記載されたリンク先を参照してください。\n");
+    printf("\n");
+    printf("'-f' 保存先ファイルパス\n");
+    printf("    保存先のファイルパスを入力してください。\n");
+    printf("    拡張子はプレーンテキスト '.txt' にのみ対応しています。\n");
+    printf("    パスに対応したファイルが自動作成され、'-c' で選択した補正が行われた電流値が保存されます。\n");
+    printf("    また、パスの拡張子の直前に '_raw' を追加したファイルが自動作成され、AD変換まで済んだ状態の生データが保存されます。\n");
+    printf("\n");
 }
 
 /**
