@@ -98,7 +98,7 @@ int main(int argc, char *argv[]) {
     FILE *fp_current;
     fp_current = fopen(file_name_current, "a+");
     if (fp_current == NULL) {
-        printf("cannot open\n");
+        printf("Error: file cannot open\n");
         exit(1);
     } else {
         fprintf(fp_current, "%s ", argv[0]);
@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
     FILE *fp_raw;
     fp_raw = fopen(file_name_raw, "a+");
     if (fp_raw == NULL) {
-        printf("cannot open\n");
+        printf("Error: file cannot open\n");
         exit(1);
     } else {
         fprintf(fp_raw, "%s ", argv[0]);
@@ -132,7 +132,7 @@ int main(int argc, char *argv[]) {
 
     nRet = AdOpen(dnum);
     if (nRet != AD_ERROR_SUCCESS) {
-        printf("Open Error\n");
+        printf("Error: Current ADC Board Open Error\nAlready measuring?");
         return -1;
     }
 
