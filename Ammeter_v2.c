@@ -179,7 +179,7 @@ int main(int argc, char *argv[]) {
         }
 
         // 補正モードを表示
-        printf("-d = %d\n", correction_mode);
+        printf("-c = %d\n", correction_mode);
 
         // 保存した時刻を書き込み
         char *local_time = NULL;
