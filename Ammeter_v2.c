@@ -2,11 +2,11 @@
  * @file Ammeter_v2.c
  * @author Kazuya Nagata
  * @brief
- * @version 2.1
- * @date 2022-12-09
+ * @version 2.2
+ * @date 2023-03-07
  *
  * @copyright Copyright (c) 2022
- *
+ * @note コメントアウトの一部にdoxygenスタイルを使用しています。doxygenの概要はこちら -> https://www.mathkuro.com/c-cpp/doxygen/
  */
 
 #include <math.h>
@@ -92,6 +92,12 @@ int main(int argc, char *argv[]) {
         for (int i = 0; i < channel_count; i++) {
             strcpy(channel_name[i], "N.C.    ");
         }
+    }
+
+    // 同名のファイルが既に存在する場合にはエラーメッセージを出して終了する
+    if (access(file_name_current, F_OK) != -1) {
+        printf("Error: A file with the same name already exists.\n");
+        exit(1);
     }
 
     // 保存用ファイルの新規行に、入力されたコマンドライン引数を書き込み
