@@ -477,9 +477,10 @@ float CalcCurrentFromVoltage(float voltage_, float gain_,
  */
 float CorrectCurrent(int dnum_, int dnum_bias_, int dnum_clock_,
                      int channel_number, float current) {
-    // https://docs.google.com/presentation/d/14LhY2mEenaMbe8-yshJthJCao5gquMtkCEy4U5I3BjA/edit#slide=id.g1b3a2a70eb4_0_4
-    // 上のリンク先の各電圧ラインの傾きを a 、切片を b とする
-    // Y = aX + b
+    // https://drive.google.com/drive/folders/188J55OwmpbHIqxtHhpQhCIOJteF3k_fJ?usp=share_link
+    // 上のリンク先の各電圧ラインの回帰直線の傾きを a 、切片を b とする
+    // 補正前の電流値を X 、補正後の電流値を Y として Y = aX + b として補正を行う。
+
     float corrected_current;
 
     if (dnum_ == dnum_clock_) {
